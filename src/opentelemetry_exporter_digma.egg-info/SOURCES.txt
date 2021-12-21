@@ -1,0 +1,8 @@
+README.md
+pyproject.toml
+setup.cfg
+setup.py
+src/opentelemetry_exporter_digma.egg-info/PKG-INFO
+src/opentelemetry_exporter_digma.egg-info/SOURCES.txt
+src/opentelemetry_exporter_digma.egg-info/dependency_links.txt
+src/opentelemetry_exporter_digma.egg-info/top_level.txt
