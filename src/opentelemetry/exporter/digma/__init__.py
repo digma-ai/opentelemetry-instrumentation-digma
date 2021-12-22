@@ -4,10 +4,12 @@ from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
 from opentelemetry.trace import Span
 from typing import Sequence
 from opentelemetry.trace.span import SpanContext
+
 logger = logging.getLogger(__name__)
 from .collector_pb2 import ExportRequest
 from .collector_pb2_grpc import DigmaCollectorStub
 import grpc
+
 
 class DigmaExporter(SpanExporter):
 
@@ -16,15 +18,12 @@ class DigmaExporter(SpanExporter):
         super().__init__()
 
     def export(self, spans: Sequence[Span]) -> SpanExportResult:
-        
-        export_request = None
 
+        export_request = None
+        span_info_list = []
         for span in spans:
-            exceptions = []
-            export_request =ExportRequest(span_id=str(span.context.span_id),
-                          trace_id= str(span.context.trace_id),
-                          service_name=span.resource.attributes['service.name'],
-                          errors=exceptions)
+            errors = []
+
             for span_event in span.events:
                 if span_event.name == 'exception':
                     error_info = ExportRequest.ErrorInformation(
@@ -32,15 +31,22 @@ class DigmaExporter(SpanExporter):
                         exception_type=span_event.attributes['exception.type'],
                         exception_stack=span_event.attributes['exception.stacktrace'],
                         timestamp=str(span_event.timestamp))
-                    exceptions.append(error_info)
+                    errors.append(error_info)
 
+            span_info = ExportRequest.SpanInformation(span_id=str(span.context.span_id),
+                                                      trace_id=str(span.context.trace_id),
+                                                      service_name=span.resource.attributes['service.name'],
+                                                      errors=errors)
+            span_info_list.append(span_info)
+
+        export_request = ExportRequest(spans=span_info_list)
         if self._closed:
             logger.warning("Exporter already shutdown, ignoring batch")
             return SpanExportResult.FAILURE
 
-        with grpc.insecure_channel('localhost:5000') as channel:
+        with grpc.insecure_channel('localhost:5050') as channel:
             stub = DigmaCollectorStub(channel)
-            response =  stub.Export(export_request)
+            response = stub.Export(export_request)
             print("Greeter client received: " + response.message)
 
     def shutdown(self) -> None:

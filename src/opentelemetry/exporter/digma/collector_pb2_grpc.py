@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import opentelemetry.exporter.digma.collector_pb2 as collector__pb2
+from .collector_pb2 import ExportResponse, ExportRequest
 
 
 class DigmaCollectorStub(object):
@@ -17,8 +17,8 @@ class DigmaCollectorStub(object):
         """
         self.Export = channel.unary_unary(
                 '/collector.DigmaCollector/Export',
-                request_serializer=collector__pb2.ExportRequest.SerializeToString,
-                response_deserializer=collector__pb2.ExportResponse.FromString,
+                request_serializer=ExportRequest.SerializeToString,
+                response_deserializer=ExportResponse.FromString,
                 )
 
 
@@ -38,8 +38,8 @@ def add_DigmaCollectorServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Export': grpc.unary_unary_rpc_method_handler(
                     servicer.Export,
-                    request_deserializer=collector__pb2.ExportRequest.FromString,
-                    response_serializer=collector__pb2.ExportResponse.SerializeToString,
+                    request_deserializer=ExportRequest.FromString,
+                    response_serializer=ExportResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -64,7 +64,7 @@ class DigmaCollector(object):
             timeout=None,
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/collector.DigmaCollector/Export',
-            collector__pb2.ExportRequest.SerializeToString,
-            collector__pb2.ExportResponse.FromString,
-            options, channel_credentials,
-            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+                                             ExportRequest.SerializeToString,
+                                             ExportResponse.FromString,
+                                             options, channel_credentials,
+                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
