@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-import collector_pb2 as collector__pb2
+import opentelemetry.exporter.digma.collector_pb2 as collector__pb2
 
 
 class DigmaCollectorStub(object):
