@@ -2,7 +2,7 @@
 """Client and server classes corresponding to protobuf-defined services."""
 import grpc
 
-from .collector_pb2 import ExportResponse, ExportRequest
+from opentelemetry.exporter.digma.v1 import digma_pb2 as opentelemetry_dot_exporter_dot_digma_dot_v1_dot_digma__pb2
 
 
 class DigmaCollectorStub(object):
@@ -16,9 +16,9 @@ class DigmaCollectorStub(object):
             channel: A grpc.Channel.
         """
         self.Export = channel.unary_unary(
-                '/collector.DigmaCollector/Export',
-                request_serializer=ExportRequest.SerializeToString,
-                response_deserializer=ExportResponse.FromString,
+                '/opentelemetry.proto.digma.v1.DigmaCollector/Export',
+                request_serializer=opentelemetry_dot_exporter_dot_digma_dot_v1_dot_digma__pb2.ExportRequest.SerializeToString,
+                response_deserializer=opentelemetry_dot_exporter_dot_digma_dot_v1_dot_digma__pb2.ExportResponse.FromString,
                 )
 
 
@@ -38,12 +38,12 @@ def add_DigmaCollectorServicer_to_server(servicer, server):
     rpc_method_handlers = {
             'Export': grpc.unary_unary_rpc_method_handler(
                     servicer.Export,
-                    request_deserializer=ExportRequest.FromString,
-                    response_serializer=ExportResponse.SerializeToString,
+                    request_deserializer=opentelemetry_dot_exporter_dot_digma_dot_v1_dot_digma__pb2.ExportRequest.FromString,
+                    response_serializer=opentelemetry_dot_exporter_dot_digma_dot_v1_dot_digma__pb2.ExportResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
-            'collector.DigmaCollector', rpc_method_handlers)
+            'opentelemetry.proto.digma.v1.DigmaCollector', rpc_method_handlers)
     server.add_generic_rpc_handlers((generic_handler,))
 
 
@@ -63,8 +63,8 @@ class DigmaCollector(object):
             wait_for_ready=None,
             timeout=None,
             metadata=None):
-        return grpc.experimental.unary_unary(request, target, '/collector.DigmaCollector/Export',
-                                             ExportRequest.SerializeToString,
-                                             ExportResponse.FromString,
-                                             options, channel_credentials,
-                                             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+        return grpc.experimental.unary_unary(request, target, '/opentelemetry.proto.digma.v1.DigmaCollector/Export',
+            opentelemetry_dot_exporter_dot_digma_dot_v1_dot_digma__pb2.ExportRequest.SerializeToString,
+            opentelemetry_dot_exporter_dot_digma_dot_v1_dot_digma__pb2.ExportResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
