@@ -6,10 +6,8 @@ from typing import Sequence
 from opentelemetry.trace.span import SpanContext
 
 logger = logging.getLogger(__name__)
-from .collector_pb2 import ExportRequest
-from .collector_pb2_grpc import DigmaCollectorStub
-import opentelemetry.proto.digma.v1.digma_pb2
-import opentelemetry.proto.digma.v1.digma_pb2_grpc
+import v1.digma_pb2
+import v1.digma_pb2_grpc
 
 import grpc
 
