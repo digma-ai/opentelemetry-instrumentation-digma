@@ -1,11 +1,21 @@
 import os
 import site
+from dataclasses import dataclass
 from typing import List
 
 import sys
 from os import path
 
 import math
+
+
+@dataclass
+class TracebackFrame:
+    fullpath: str
+    line_num: int
+    func_name: str
+    line: str
+    path: str
 
 
 class TracebackParser:
@@ -15,11 +25,13 @@ class TracebackParser:
         for idx in range(math.floor(len(arr) / size)):
             yield arr[idx * size: idx * size + size]
 
-    def error_flow_parser(self, stacktrace: str):
+    def error_flow_parser(self, stacktrace: str) -> List[TracebackFrame]:
         lines = stacktrace.splitlines()[1: -1]
         frames = iter(self.split([line.strip() for line in lines], 2))
+        error_frames = []
         for frame in frames:
-            self._frame_parser(frame)
+            error_frames.append(self._frame_parser(frame))
+        return error_frames
 
     @staticmethod
     def _file_path_normalizer(file_path: str):
@@ -41,13 +53,11 @@ class TracebackParser:
                 return normalize_path
         return file_path
 
-    def _frame_parser(self, lines: List[str]):
+    def _frame_parser(self, lines: List[str]) -> TracebackFrame:
         split_line = lines[0].split(',')
         fullpath = split_line[0].strip()[6:-1]
         line_num = int(split_line[1].strip()[5:])
         func_name = split_line[2].strip()[3:]
         line = lines[1].strip()
         path = self._file_path_normalizer(fullpath)
-        print(f'full_path: {fullpath}')
-        print(f'path: {path}')
-        ...
+        return TracebackFrame(fullpath=fullpath, line_num=line_num, func_name=func_name, line=line, path=path)

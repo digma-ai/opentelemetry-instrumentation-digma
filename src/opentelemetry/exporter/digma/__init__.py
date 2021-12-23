@@ -1,15 +1,15 @@
 import logging
-from opentelemetry.sdk.resources import SERVICE_NAME
 from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
 from opentelemetry.trace import Span
 from typing import Sequence
-from opentelemetry.trace.span import SpanContext
+
+from .digma_pb2 import ExportRequest, ErrorFrame, ErrorEvent
+
+from .digma_pb2_grpc import DigmaCollectorStub
+
+from opentelemetry.exporter.digma.traceback_parser import TracebackParser, TracebackFrame
 
 logger = logging.getLogger(__name__)
-from .collector_pb2 import ExportRequest
-from .collector_pb2_grpc import DigmaCollectorStub
-import opentelemetry.proto.digma.v1.digma_pb2
-import opentelemetry.proto.digma.v1.digma_pb2_grpc
 
 import grpc
 
@@ -23,26 +23,29 @@ class DigmaExporter(SpanExporter):
     def export(self, spans: Sequence[Span]) -> SpanExportResult:
 
         export_request = None
-        span_info_list = []
+        spans_infos = []
         for span in spans:
-            errors = []
-
+            error_events = []
             for span_event in span.events:
                 if span_event.name == 'exception':
-                    error_info = ExportRequest.ErrorInformation(
-                        exception_name=span_event.attributes['exception.message'],
-                        exception_type=span_event.attributes['exception.type'],
-                        exception_stack=span_event.attributes['exception.stacktrace'],
-                        timestamp=str(span_event.timestamp))
-                    errors.append(error_info)
+                    stack_trace = span_event.attributes['exception.stacktrace']
+                    error_frames = TracebackParser().error_flow_parser(stack_trace)
+                    error_event = ErrorEvent(frames=[ErrorFrame(module_name=ef.func_name,
+                                                                module_path=ef.path,
+                                                                excuted_code=ef.line,
+                                                                line_number=ef.line_num) for ef in error_frames])
+                    error_events.append(error_event)
 
-            span_info = ExportRequest.SpanInformation(span_id=str(span.context.span_id),
-                                                      trace_id=str(span.context.trace_id),
-                                                      service_name=span.resource.attributes['service.name'],
-                                                      errors=errors)
-            span_info_list.append(span_info)
+            spans_infos.append(
+                ExportRequest.SpanInformation(span_id=str(span.context.span_id),
+                                              trace_id=str(span.context.trace_id),
+                                              error_events=error_events))
 
-        export_request = ExportRequest(spans=span_info_list)
+        export_request = ExportRequest(
+            service_name=span.resource.attributes['service.name'],
+            programming_language='python',
+            spans=spans_infos
+        )
         if self._closed:
             logger.warning("Exporter already shutdown, ignoring batch")
             return SpanExportResult.FAILURE
