@@ -1,1 +1,1 @@
-python -m grpc_tools.protoc -I./protos --python_out=./src/opentelemetry/exporter/digma --grpc_python_out=./src/opentelemetry/exporter/digma ./protos/collector.proto
+python3 -m grpc_tools.protoc -I../digma-protos --python_out=./src/opentelemetry/exporter/digma --grpc_python_out=./src/opentelemetry/exporter/digma ../digma-protos/opentelemetry/proto/digma/v1/digma.proto
