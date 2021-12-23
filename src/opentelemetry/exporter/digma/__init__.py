@@ -3,9 +3,9 @@ from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
 from opentelemetry.trace import Span
 from typing import Sequence
 
-from .digma_pb2 import ExportRequest, ErrorFrame, ErrorEvent
+from .v1.digma_pb2 import ExportRequest, ErrorFrame, ErrorEvent
 
-from .digma_pb2_grpc import DigmaCollectorStub
+from .v1.digma_pb2_grpc import DigmaCollectorStub
 
 from opentelemetry.exporter.digma.traceback_parser import TracebackParser, TracebackFrame
 
