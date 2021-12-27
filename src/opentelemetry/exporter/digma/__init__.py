@@ -27,11 +27,10 @@ class DigmaExporter(SpanExporter):
     def _create_proto_event(self, event: Event) -> proto_span.Event:
         attributes = []
         for attribute in event.attributes:
-            attributes.append(KeyValue(key=attribute,value=AnyValue(string_value=event.attributes[attribute])))
-        return proto_span.Event(time_unix_nano=event.timestamp, 
-                          name=event.name,
-                          attributes=attributes)
-
+            attributes.append(KeyValue(key=attribute, value=AnyValue(string_value=event.attributes[attribute])))
+        return proto_span.Event(time_unix_nano=event.timestamp,
+                                name=event.name,
+                                attributes=attributes)
 
     def export(self, spans: Sequence[Span]) -> SpanExportResult:
 
@@ -44,14 +43,14 @@ class DigmaExporter(SpanExporter):
                 if span_event.name == 'exception':
                     stack_trace = span_event.attributes['exception.stacktrace']
                     error_frames = TracebackParser().error_flow_parser(stack_trace)
-                    exception_type= span_event.attributes['exception.type']
+                    exception_type = span_event.attributes['exception.type']
                     name = f"{exception_type} from {error_frames[-1].func_name}({error_frames[-1].line_num})"
-                    error_event = ErrorEvent( exception_message = span_event.attributes['exception.message'],
-                                              exception_type = span_event.attributes['exception.type'],
-                                              exception_stack = stack_trace,
-                                              name = name,
-                                              timestamp =str(span_event.timestamp),
-                                              frames=[ErrorFrame(module_name=ef.func_name,
+                    error_event = ErrorEvent(exception_message=span_event.attributes['exception.message'],
+                                             exception_type=span_event.attributes['exception.type'],
+                                             exception_stack=stack_trace,
+                                             name=name,
+                                             timestamp=str(span_event.timestamp),
+                                             frames=[ErrorFrame(module_name=ef.func_name,
                                                                 module_path=ef.path,
                                                                 excuted_code=ef.line,
                                                                 line_number=ef.line_num) for ef in error_frames])
