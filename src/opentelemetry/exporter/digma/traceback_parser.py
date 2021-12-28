@@ -33,8 +33,12 @@ class TracebackParser:
             error_frames.append(self._frame_parser(frame))
         return error_frames
 
+    @staticmethod 
+    def _forward_slash_for_paths(file_path: str) -> str:
+        return file_path.replace('\\', '/')
+
     @staticmethod
-    def _file_path_normalizer(file_path: str):
+    def _file_path_normalizer(file_path: str) -> str:
         if not path.isabs(file_path):  # case when path start with ./
             if not file_path.startswith('./'):
                 return file_path
@@ -59,5 +63,5 @@ class TracebackParser:
         line_num = int(split_line[1].strip()[5:])
         func_name = split_line[2].strip()[3:]
         line = lines[1].strip()
-        path = self._file_path_normalizer(fullpath)
+        path = self._forward_slash_for_paths(self._file_path_normalizer(fullpath))
         return TracebackFrame(fullpath=fullpath, line_num=line_num, func_name=func_name, line=line, path=path)
