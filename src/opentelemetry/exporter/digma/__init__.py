@@ -46,7 +46,7 @@ class DigmaExporter(SpanExporter):
                     stack_trace = span_event.attributes['exception.stacktrace']
                     error_frames = TracebackParser().error_flow_parser(stack_trace)
                     exception_type = span_event.attributes['exception.type']
-                    name = f"{exception_type} from {error_frames[-1].func_name}({error_frames[-1].line_num})"
+                    name = f"{exception_type} from {error_frames[-1].func_name}"
                     error_event = ErrorEvent(exception_message=span_event.attributes['exception.message'],
                                              exception_type=span_event.attributes['exception.type'],
                                              exception_stack=stack_trace,
