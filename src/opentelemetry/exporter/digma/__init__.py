@@ -1,4 +1,6 @@
 import logging
+import os
+
 from opentelemetry.proto.common.v1.common_pb2 import KeyValue
 from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
 from opentelemetry.trace import Span
@@ -65,6 +67,8 @@ class DigmaExporter(SpanExporter):
 
         export_request = ExportRequest(
             service_name=span.resource.attributes['service.name'],
+            environment=os.environ.get('ENVIRONMENT', ''),
+            commit_id=os.environ.get('GIT_COMMIT_ID', ''),
             programming_language='python',
             spans=spans_infos
         )
