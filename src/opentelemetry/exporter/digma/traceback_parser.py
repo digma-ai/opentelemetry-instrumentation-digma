@@ -21,7 +21,7 @@ class TracebackFrame:
 class TracebackParser:
 
     @staticmethod
-    def split(arr: [], size: int):
+    def split(arr: List[str], size: int):
         for idx in range(math.floor(len(arr) / size)):
             yield arr[idx * size: idx * size + size]
 
