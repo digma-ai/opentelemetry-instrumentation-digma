@@ -18,6 +18,12 @@ class TracebackFrame:
     path: str
 
 
+@dataclass
+class TracebackFrameStack:
+    frames: List[TracebackFrame]
+    exception_type: str
+
+
 class TracebackParser:
 
     @staticmethod
@@ -33,7 +39,31 @@ class TracebackParser:
             error_frames.append(self._frame_parser(frame))
         return error_frames
 
-    @staticmethod 
+    def parse_error_flow_stacks(self, stacktrace: str) -> List[TracebackFrameStack]:
+        frames: List[TracebackFrame] = []
+        stacks: List[TracebackFrameStack] = []
+        first_frame_line = None
+        skip_to_next_traceback = True
+        for idx, line in enumerate(stacktrace.splitlines()):
+            if skip_to_next_traceback:  # skip lines until next traceback
+                if line.startswith('Traceback'):
+                    skip_to_next_traceback = False
+                    frames = []
+                continue
+
+            if line.strip().startswith('File'):  # start a new frame
+                first_frame_line = line
+            else:
+                if first_frame_line:  # in the middle of a frame
+                    frames.append(self._frame_parser([first_frame_line, line]))
+                    first_frame_line = None
+                else:  # last line of a traceback ( exception type)
+                    stacks.append(
+                        TracebackFrameStack(frames=frames, exception_type=line.split(':')[0]))
+                    skip_to_next_traceback = True
+        return stacks
+
+    @staticmethod
     def _forward_slash_for_paths(file_path: str) -> str:
         return file_path.replace('\\', '/')
 
