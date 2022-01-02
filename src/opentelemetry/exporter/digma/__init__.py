@@ -1,5 +1,6 @@
 import logging
 import os
+import grpc
 from typing import Sequence, List, Iterator
 
 from opentelemetry.proto.common.v1.common_pb2 import KeyValue, AnyValue
@@ -12,8 +13,6 @@ from .v1.digma_pb2 import ExportRequest, ErrorFrame, ErrorEvent, ErrorFrameStack
 from .v1.digma_pb2_grpc import DigmaCollectorStub
 
 logger = logging.getLogger(__name__)
-
-import grpc
 
 
 class DigmaExporter(SpanExporter):
@@ -30,11 +29,12 @@ class DigmaExporter(SpanExporter):
                                 name=event.name,
                                 attributes=attributes)
 
-    def _generate_error_flow_name(self, exception_type: str, initiative_stack_frame: TracebackFrameStack):
-        return f"{exception_type} from {initiative_stack_frame.frames[-1].func_name}" \
-               f"({initiative_stack_frame.frames[-1].line_num})"
+    @staticmethod
+    def _generate_error_flow_name(exception_type: str, initiative_stack_frame: TracebackFrameStack):
+        return f"{exception_type} from {initiative_stack_frame.frames[-1].func_name}"
 
-    def _convert_to_error_frame_stack(self, stacks: List[TracebackFrameStack]) -> Iterator[ErrorFrameStack]:
+    @staticmethod
+    def _convert_to_error_frame_stack(stacks: List[TracebackFrameStack]) -> Iterator[ErrorFrameStack]:
         for stack in stacks:
             yield ErrorFrameStack(frames=[ErrorFrame(module_name=ef.func_name,
                                                      module_path=ef.path,
