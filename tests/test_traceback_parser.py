@@ -2,7 +2,9 @@ import traceback
 from typing import Optional
 from unittest import TestCase
 
+import opentelemetry.exporter.digma.common as common
 from opentelemetry.exporter.digma import TracebackParser
+from stubs import ExceptionWithParams
 
 
 class TracebackParserTest(TestCase):
@@ -31,9 +33,23 @@ class TracebackParserTest(TestCase):
         except:
             exc_stacktrace = traceback.format_exc()
 
-        frame_stacks = TracebackParser().parse_error_flow_stacks(stacktrace=exc_stacktrace)
+        frame_stacks = TracebackParser.parse_error_flow_stacks(stacktrace=exc_stacktrace)
         self.assertEqual(len(frame_stacks), 3)
         # more asserts should be added
+
+    def test_traceback_with_locals(self):
+        try:
+            ExceptionWithParams().throw_exception("1", "2")
+        except Exception as e:
+            exc_stacktrace = common.get_traceback_with_locals(e)
+
+        frame_stacks = TracebackParser.parse_error_flow_stacks(stacktrace=exc_stacktrace)
+        params = frame_stacks[0].frames[1].parameters
+        self.assertIn('arg1', params)
+        self.assertIn('arg2', params)
+
+        self.assertEqual(params['arg1'], "'1'")
+        self.assertEqual(params['arg2'], "'2'")
 
     def test_single_traceback(self):
         try:
@@ -41,7 +57,7 @@ class TracebackParserTest(TestCase):
         except:
             exc_stacktrace = traceback.format_exc()
 
-        frame_stacks = TracebackParser().parse_error_flow_stacks(stacktrace=exc_stacktrace)
+        frame_stacks = TracebackParser.parse_error_flow_stacks(stacktrace=exc_stacktrace)
         self.assertEqual(len(frame_stacks), 1)
 
     def test_traceback_with_frame_with_no_line(self):
@@ -50,16 +66,15 @@ class TracebackParserTest(TestCase):
         except:
             exc_stacktrace = traceback.format_exc()
 
-        frame_stacks = TracebackParser().parse_error_flow_stacks(stacktrace=exc_stacktrace)
+        frame_stacks = TracebackParser.parse_error_flow_stacks(stacktrace=exc_stacktrace)
         self.assertEqual(len(frame_stacks), 1)
-        self.assertIsNone(frame_stacks[0].frames[1].line)
+        self.assertEqual(frame_stacks[0].frames[1].executed_code, '')
 
     # @pytest.mark.parametrize("recursion_depth,expected", [(4, 1), (10, 7)])
     def test_recursion(self):
 
         def recursion_call(depth: int):
             if depth != 0:
-                print(depth)
                 return recursion_call(depth - 1)
             else:
                 raise ValueError('?')
@@ -71,7 +86,7 @@ class TracebackParserTest(TestCase):
         except:
             exc_stacktrace = traceback.format_exc()
 
-        frame_stacks = TracebackParser().parse_error_flow_stacks(stacktrace=exc_stacktrace)
+        frame_stacks = TracebackParser.parse_error_flow_stacks(stacktrace=exc_stacktrace)
 
         self.assertEqual(frame_stacks[0].frames[3].repeat, expected)
 
@@ -82,6 +97,6 @@ class TracebackParserTest(TestCase):
         except:
             exc_stacktrace = traceback.format_exc()
 
-        frame_stacks = TracebackParser().parse_error_flow_stacks(stacktrace=exc_stacktrace)
+        frame_stacks = TracebackParser.parse_error_flow_stacks(stacktrace=exc_stacktrace)
 
         self.assertEqual(frame_stacks[0].frames[3].repeat, expected)  # check

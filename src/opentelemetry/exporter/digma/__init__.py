@@ -1,5 +1,6 @@
 import logging
 import os
+import traceback
 import grpc
 from typing import Sequence, List, Iterator
 
@@ -8,12 +9,36 @@ from opentelemetry.proto.trace.v1.trace_pb2 import Span as proto_span
 from opentelemetry.sdk.trace import Event, Span
 from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
 
-from opentelemetry.exporter.digma.traceback_parser import TracebackParser, TracebackFrame, TracebackFrameStack
+from opentelemetry.exporter.digma.traceback_parser import TracebackParser, TracebackFrameStack
 from .v1.digma_pb2 import ExportRequest, ErrorFrame, ErrorEvent, ErrorFrameStack
 from .v1.digma_pb2_grpc import DigmaCollectorStub
+import sys
+import traceback
+from opentelemetry.util import types
+from typing import Optional
+import opentelemetry.exporter.digma.common as common
 
 logger = logging.getLogger(__name__)
+    
+default_add_event = Span.add_event
+default_record_exception = Span.record_exception
 
+
+def record_exception(
+        self,
+        exception: Exception,
+        attributes: types.Attributes = None,
+        timestamp: Optional[int] = None,
+        escaped: bool = False,
+    ) -> None:
+     
+    _attributes = {'exception.stacktrace.full': common.get_traceback_with_locals(sys.exc_info()[1])}
+    if attributes:
+        _attributes.update(attributes)
+    return default_record_exception(self,exception, _attributes,timestamp, escaped)
+    
+Span.record_exception = record_exception
+#Span.add_event = add_event
 
 class DigmaExporter(SpanExporter):
 
@@ -30,21 +55,12 @@ class DigmaExporter(SpanExporter):
                                 attributes=attributes)
 
     @staticmethod
-    def _generate_error_flow_name(exception_type: str, initiative_stack_frame: TracebackFrameStack):
-        return f"{exception_type} from {initiative_stack_frame.frames[-1].func_name}"
+    def _generate_error_flow_name(exception_type: str, error_frame_stack: ErrorFrameStack):
+        return f"{exception_type} from {error_frame_stack.frames[-1].module_name}"
 
     @staticmethod
     def _forward_slash_for_paths(file_path: str) -> str:
         return file_path.replace('\\', '/')
-
-    @staticmethod
-    def _convert_to_error_frame_stack(stacks: List[TracebackFrameStack]) -> Iterator[ErrorFrameStack]:
-        for stack in stacks:
-            yield ErrorFrameStack(frames=[ErrorFrame(module_name=ef.func_name,
-                                                     module_path=DigmaExporter._forward_slash_for_paths(ef.path),
-                                                     excuted_code=ef.line,
-                                                     line_number=ef.line_num) for ef in stack.frames],
-                                  exception_type=stack.exception_type)
 
     def export(self, spans: Sequence[Span]) -> SpanExportResult:
 
@@ -55,17 +71,19 @@ class DigmaExporter(SpanExporter):
             events = []
             for span_event in span.events:
                 if span_event.name == 'exception':
+                    full_stack_trace = span_event.attributes['exception.stacktrace.full']
                     stack_trace = span_event.attributes['exception.stacktrace']
-                    error_flow_stacks = TracebackParser().parse_error_flow_stacks(stack_trace)
+                    stacks = TracebackParser.parse_error_flow_stacks(full_stack_trace)
                     exception_type = span_event.attributes['exception.type']
                     error_event = ErrorEvent(exception_message=span_event.attributes['exception.message'],
                                              exception_type=span_event.attributes['exception.type'],
                                              exception_stack=stack_trace,
-                                             name=self._generate_error_flow_name(exception_type, error_flow_stacks[0]),
+                                             name=self._generate_error_flow_name(exception_type, stacks[0]),
                                              timestamp=str(span_event.timestamp),
-                                             stacks=self._convert_to_error_frame_stack(error_flow_stacks))
+                                             stacks=stacks)
                     error_events.append(error_event)
                     events.append(self._create_proto_event(span_event))
+            
             if error_events:
                 spans_infos.append(
                     ExportRequest.SpanInformation(span_id=str(span.context.span_id),

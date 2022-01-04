@@ -1,13 +1,11 @@
+import math
 import os
 import re
 import site
-from dataclasses import dataclass
-from typing import List, Tuple
-
 import sys
+from dataclasses import dataclass
 from os import path
-
-import math
+from typing import List, Dict, Set
 
 from opentelemetry.exporter.digma.v1.digma_pb2 import ErrorFrameStack, ErrorFrame
 
@@ -19,6 +17,7 @@ class TracebackFrame:
     func_name: str
     line: str
     path: str
+    parameters: str
     repeat: int = 0  # when repeat > 0, means line repeated {repeat} more times
 
 
@@ -29,17 +28,19 @@ class TracebackFrameStack:
 
 
 class TracebackParser:
-    FRAME_FILE_PATTERN = re.compile('\s\sFile\s"(.+)",\sline ([0-9]+),\sin\s(.+)')
-    FRAME_CODE_LINE_PATTERN = re.compile('\s\s\s\s(.+)')
-    FRAME_LOCALS_LINE_PATTERN = re.compile('\s\s\s\s(.+)\s=\s(.+)')
-    FRAME_REPEAT_PATTERN = re.compile('^\s\s\[Previous line repeated ([0-9]+) more time(s?)\]$')
+    _frame_file_patten = re.compile('\s\sFile\s"(.+)",\sline ([0-9]+),\sin\s(.+)')
+    _frame_code_line_pattern = re.compile('\s\s\s\s(.+)')
+    _frame_locals_line_pattern = re.compile('\s\s\s\s(.+)\s=\s(.+)')
+    _frame_repeat_pattern = re.compile('^\s\s\[Previous line repeated ([0-9]+) more time(s?)\]$')
+    _ignore_parameters: Set[str] = {'self'}
 
     @staticmethod
     def split(arr: List[str], size: int):
         for idx in range(math.floor(len(arr) / size)):
             yield arr[idx * size: idx * size + size]
 
-    def parse_error_flow_stacks(self, stacktrace: str) -> List[ErrorFrameStack]:
+    @staticmethod
+    def parse_error_flow_stacks(stacktrace: str) -> List[ErrorFrameStack]:
         frames: List[ErrorFrame] = []
         stacks: List[ErrorFrameStack] = []
 
@@ -48,39 +49,48 @@ class TracebackParser:
         skip_to_next_traceback = True
         while line_num < len(lines):
             line = lines[line_num]
+            if not line.strip():  # skip on empty lines
+                line_num += 1
+                continue
+
             if skip_to_next_traceback:
                 if line == 'Traceback (most recent call last):':
                     skip_to_next_traceback = False
                     frames = []
                 line_num += 1
                 continue
-            match = self.FRAME_FILE_PATTERN.match(line)
+            match = TracebackParser._frame_file_patten.match(line)
             if match:
                 code_line = None
                 repeat = 0
-                fullpath = match.group(1)
-                code_line_num = match.group(2)
-                func_name = match.group(3)
-                normalize_path = self._file_path_normalizer(fullpath)
+                fullpath = match.group(1).strip()
+                code_line_num = match.group(2).strip()
+                func_name = match.group(3).strip()
+                normalize_path = TracebackParser._file_path_normalizer(fullpath)
                 line_num += 1
                 line = lines[line_num]
-                if bool(self.FRAME_CODE_LINE_PATTERN.match(line)):
+                if bool(TracebackParser._frame_code_line_pattern.match(line)):
                     code_line = line.strip()
                     line_num += 1
                     line = lines[line_num]
 
-                match = self.FRAME_LOCALS_LINE_PATTERN.match("    asd = ffff")
-                if match:
+                parameters: Dict[str, str] = {}
+                while match := TracebackParser._frame_locals_line_pattern.match(line):
+                    key = match.group(1).strip()
+                    if key not in TracebackParser._ignore_parameters:
+                        parameters[key] = match.group(2).strip()
                     line_num += 1
+                    line = lines[line_num]
 
-                match = self.FRAME_REPEAT_PATTERN.match(line)
+                match = TracebackParser._frame_repeat_pattern.match(line)
                 if match:
                     line_num += 1
                     repeat = int(match.group(1))
                 frames.append(ErrorFrame(module_name=func_name,
                                          module_path=normalize_path,
-                                         excuted_code=code_line,
-                                         line_number=code_line_num,
+                                         executed_code=code_line,
+                                         line_number=int(code_line_num),
+                                         parameters=parameters,
                                          repeat=repeat))
                 continue
             if frames:
