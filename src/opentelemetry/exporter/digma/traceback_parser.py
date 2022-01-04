@@ -17,6 +17,7 @@ class TracebackFrame:
     func_name: str
     line: str
     path: str
+    parameters:str
     repeat: int = 0  # when repeat > 0, means line repeated {repeat} more times
 
 
@@ -75,7 +76,8 @@ class TracebackParser:
                                              func_name=func_name,
                                              line=code_line,
                                              path=normalize_path,
-                                             repeat=repeat))
+                                             repeat=repeat,
+                                             parameters="TODO"))
                 continue
             if frames:
                 # if frames are empty,

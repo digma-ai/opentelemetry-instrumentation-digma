@@ -3,6 +3,9 @@ from typing import Optional
 from unittest import TestCase
 
 from opentelemetry.exporter.digma import TracebackParser
+import opentelemetry.exporter.digma.common as common
+import json
+from stubs import ExceptionWithParams
 
 
 class TracebackParserTest(TestCase):
@@ -34,6 +37,23 @@ class TracebackParserTest(TestCase):
         frame_stacks = TracebackParser().parse_error_flow_stacks(stacktrace=exc_stacktrace)
         self.assertEqual(len(frame_stacks), 3)
         # more asserts should be added
+
+    def test_traceback_with_locals(self):
+        try:
+            ExceptionWithParams().throw_exception("1", "2")
+        except Exception as e:
+            exc_stacktrace = common.get_traceback_with_locals(e)
+        
+        frame_stacks = TracebackParser().parse_error_flow_stacks(stacktrace=exc_stacktrace)
+        params = json.loads(frame_stacks[0].frames[0].parameters)
+        self.assertIn('arg1', params)
+        self.assertIn('arg2', params)
+
+        self.assertEqual(params['arg1'], "1")
+        self.assertEqual(params['arg2'], "1")
+
+   
+        print('g')
 
     def test_single_traceback(self):
         try:
