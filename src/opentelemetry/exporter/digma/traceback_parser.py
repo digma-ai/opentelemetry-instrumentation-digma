@@ -9,6 +9,8 @@ from os import path
 
 import math
 
+from opentelemetry.exporter.digma.v1.digma_pb2 import ErrorFrameStack, ErrorFrame
+
 
 @dataclass
 class TracebackFrame:
@@ -27,19 +29,19 @@ class TracebackFrameStack:
 
 
 class TracebackParser:
-    FRAME_FILE_PATTERN = '\s\sFile\s".*",\sline [0-9]+,\sin\s.*'
-    FRAME_CODE_LINE_PATTERN = '(\s\s\s\s.*).+'
-    FRAME_LOCALS_LINE_PATTERN = '\s\s\s\s.*\s=\s.*'
-    FRAME_REPEAT_PATTERN = '^\s\s\[Previous line repeated ([0-9]+) more time(s?)\]$'
+    FRAME_FILE_PATTERN = re.compile('\s\sFile\s"(.+)",\sline ([0-9]+),\sin\s(.+)')
+    FRAME_CODE_LINE_PATTERN = re.compile('\s\s\s\s(.+)')
+    FRAME_LOCALS_LINE_PATTERN = re.compile('\s\s\s\s(.+)\s=\s(.+)')
+    FRAME_REPEAT_PATTERN = re.compile('^\s\s\[Previous line repeated ([0-9]+) more time(s?)\]$')
 
     @staticmethod
     def split(arr: List[str], size: int):
         for idx in range(math.floor(len(arr) / size)):
             yield arr[idx * size: idx * size + size]
 
-    def parse_error_flow_stacks(self, stacktrace: str) -> List[TracebackFrameStack]:
-        frames: List[TracebackFrame] = []
-        stacks: List[TracebackFrameStack] = []
+    def parse_error_flow_stacks(self, stacktrace: str) -> List[ErrorFrameStack]:
+        frames: List[ErrorFrame] = []
+        stacks: List[ErrorFrameStack] = []
 
         lines = stacktrace.splitlines()
         line_num = 0
@@ -52,52 +54,44 @@ class TracebackParser:
                     frames = []
                 line_num += 1
                 continue
-            if bool(re.match(self.FRAME_FILE_PATTERN, line)):
+            match = self.FRAME_FILE_PATTERN.match(line)
+            if match:
                 code_line = None
                 repeat = 0
-                fullpath, func_name, code_line_num, normalize_path = self.file_line_parser(line)
+                fullpath = match.group(1)
+                code_line_num = match.group(2)
+                func_name = match.group(3)
+                normalize_path = self._file_path_normalizer(fullpath)
                 line_num += 1
                 line = lines[line_num]
-                if bool(re.match(self.FRAME_CODE_LINE_PATTERN, line)):
+                if bool(self.FRAME_CODE_LINE_PATTERN.match(line)):
                     code_line = line.strip()
                     line_num += 1
                     line = lines[line_num]
 
-                if bool(re.match(self.FRAME_LOCALS_LINE_PATTERN, line)):
+                match = self.FRAME_LOCALS_LINE_PATTERN.match("    asd = ffff")
+                if match:
                     line_num += 1
 
-                match = re.search(self.FRAME_REPEAT_PATTERN, line)
+                match = self.FRAME_REPEAT_PATTERN.match(line)
                 if match:
                     line_num += 1
                     repeat = int(match.group(1))
-                frames.append(TracebackFrame(fullpath=fullpath,
-                                             line_num=code_line_num,
-                                             func_name=func_name,
-                                             line=code_line,
-                                             path=normalize_path,
-                                             repeat=repeat))
+                frames.append(ErrorFrame(module_name=func_name,
+                                         module_path=normalize_path,
+                                         excuted_code=code_line,
+                                         line_number=code_line_num,
+                                         repeat=repeat))
                 continue
             if frames:
                 # if frames are empty,
                 # it means done processing all current traceback details
                 # continue until the next traceback
                 stacks.append(
-                    TracebackFrameStack(frames=frames, exception_type=line.split(':')[0]))
+                    ErrorFrameStack(frames=frames, exception_type=line.split(':')[0]))
                 skip_to_next_traceback = True
             line_num += 1
         return stacks
-
-    def file_line_parser(self, line) -> Tuple[str, str, int, str]:
-        split_line = line.split(',')
-        fullpath = split_line[0].strip()[6:-1]
-        line_num = int(split_line[1].strip()[5:])
-        func_name = split_line[2].strip()[3:]
-        normalize_path = self._forward_slash_for_paths(self._file_path_normalizer(fullpath))
-        return fullpath, func_name, line_num, normalize_path
-
-    @staticmethod
-    def _forward_slash_for_paths(file_path: str) -> str:  # todo: shay why cannot we use os definitions?
-        return file_path.replace('\\', '/')
 
     @staticmethod
     def _file_path_normalizer(file_path: str) -> str:

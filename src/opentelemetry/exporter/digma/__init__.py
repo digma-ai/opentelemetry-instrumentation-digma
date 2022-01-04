@@ -34,10 +34,14 @@ class DigmaExporter(SpanExporter):
         return f"{exception_type} from {initiative_stack_frame.frames[-1].func_name}"
 
     @staticmethod
+    def _forward_slash_for_paths(file_path: str) -> str:
+        return file_path.replace('\\', '/')
+
+    @staticmethod
     def _convert_to_error_frame_stack(stacks: List[TracebackFrameStack]) -> Iterator[ErrorFrameStack]:
         for stack in stacks:
             yield ErrorFrameStack(frames=[ErrorFrame(module_name=ef.func_name,
-                                                     module_path=ef.path,
+                                                     module_path=DigmaExporter._forward_slash_for_paths(ef.path),
                                                      excuted_code=ef.line,
                                                      line_number=ef.line_num) for ef in stack.frames],
                                   exception_type=stack.exception_type)
