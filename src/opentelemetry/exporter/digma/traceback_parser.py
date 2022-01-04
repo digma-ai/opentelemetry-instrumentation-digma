@@ -64,7 +64,7 @@ class TracebackParser:
                     line_num += 1
                     line = lines[line_num]
 
-                if bool(re.match(self.FRAME_CODE_LINE_PATTERN, line)):
+                if bool(re.match(self.FRAME_LOCALS_LINE_PATTERN, line)):
                     line_num += 1
 
                 match = re.search(self.FRAME_REPEAT_PATTERN, line)
