@@ -32,7 +32,7 @@ class TracebackParser:
     _frame_code_line_pattern = re.compile('\s\s\s\s(.+)')
     _frame_locals_line_pattern = re.compile('\s\s\s\s(.+)\s=\s(.+)')
     _frame_repeat_pattern = re.compile('^\s\s\[Previous line repeated ([0-9]+) more time(s?)\]$')
-    _ignore_parameters: Set[str] = {'self'}
+    _ignore_parameters: Set[str] = {'self', '_'}
 
     @staticmethod
     def split(arr: List[str], size: int):
@@ -40,7 +40,7 @@ class TracebackParser:
             yield arr[idx * size: idx * size + size]
 
     @staticmethod
-    def parse_error_flow_stacks(stacktrace: str, span_id: str = "", ignore_list = []) -> List[ErrorFrameStack]:
+    def parse_error_flow_stacks(stacktrace: str, span_id: str = "", ignore_list=[]) -> List[ErrorFrameStack]:
         frames: List[ErrorFrame] = []
         stacks: List[ErrorFrameStack] = []
 
@@ -85,15 +85,15 @@ class TracebackParser:
                 match = TracebackParser._frame_repeat_pattern.match(line)
                 if match:
                     line_num += 1
-                    repeat = int(match.group(1))    
+                    repeat = int(match.group(1))
                 if normalize_path not in ignore_list:
                     frames.append(ErrorFrame(module_name=func_name,
-                                            span_id=span_id,
-                                            module_path=normalize_path,
-                                            executed_code=code_line,
-                                            line_number=int(code_line_num),
-                                            parameters=parameters,
-                                            repeat=repeat))
+                                             span_id=span_id,
+                                             module_path=normalize_path,
+                                             executed_code=code_line,
+                                             line_number=int(code_line_num),
+                                             parameters=parameters,
+                                             repeat=repeat))
                 continue
             if frames:
                 # if frames are empty,
