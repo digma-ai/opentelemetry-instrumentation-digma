@@ -76,7 +76,7 @@ class DigmaExporter(SpanExporter):
         
         attributes = []
         for attribute in link.attributes:
-            attributes.append(KeyValue(key=attribute, value=AnyValue(string_value=str(span.attributes[attribute]))))
+            attributes.append(KeyValue(key=attribute, value=AnyValue(string_value=str(link.attributes[attribute]))))
 
         return proto_span.Link(trace_id=link.context.trace_id,
                                trace_state=link.context.trace_state,
@@ -164,9 +164,12 @@ class DigmaExporter(SpanExporter):
 
         
         for event in error_events:
+            event.handled=True
             print("---error---" + event.name)
             for stack in event.stacks:
                 for frame in stack.frames:
+                    if event.handled==True and spans_by_id[int(frame.span_id)].kind == SpanKind.SERVER:
+                        event.handled=False
                     print(f"#{frame.span_id} - {frame.module_path}/{frame.module_name}:{frame.line_number}") 
         
         errors_info = ExportRequest.ErrorsInformation(trace_id=str(span.context.trace_id),
