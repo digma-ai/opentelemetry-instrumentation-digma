@@ -38,11 +38,17 @@ class DigmaExporter(SpanExporter):
     def _forward_slash_for_paths(file_path: str) -> str:
         return file_path.replace('\\', '/')
 
+    @staticmethod
+    def _spans_contain_exception_event(spans: typing.Sequence[Span] ):
+        for span in spans:
+            for event in span.events:
+                if event.name == 'exception':
+                    return True
+        return False
+
     def export(self, spans: typing.Sequence[Span]) -> SpanExportResult:
 
-        spans_infos = self._extract_span_infos(spans)
-
-        if not spans_infos:  # no error event, no export needed
+        if not self._spans_contain_exception_event(spans):
             return SpanExportResult.SUCCESS
 
         errors_info = self._extract_error_events(spans)
@@ -54,8 +60,7 @@ class DigmaExporter(SpanExporter):
             commit_id=os.environ.get('GIT_COMMIT_ID', ''),
             programming_language='python',
             error_information=errors_info,
-            spans=spans_infos,
-            spans_infos=proto_span_infos
+            spans=proto_span_infos
         )
         if self._closed:
             logger.warning("Exporter already shutdown, ignoring batch")
@@ -65,35 +70,6 @@ class DigmaExporter(SpanExporter):
             stub = DigmaCollectorStub(channel)
             response = stub.Export(export_request)
             print("Greeter client received: " + response.message)
-
-    # Legacy - need to remove
-    def _extract_span_infos(self, spans):
-        spans_infos = []
-        for span in spans:
-            error_events = []
-            events = []
-            for span_event in span.events:
-                if span_event.name == 'exception':
-                    full_stack_trace = span_event.attributes['exception.stacktrace.full']
-                    stack_trace = span_event.attributes['exception.stacktrace']
-                    stacks = TracebackParser.parse_error_flow_stacks(full_stack_trace)
-                    exception_type = span_event.attributes['exception.type']
-                    error_event = ErrorEvent(exception_message=span_event.attributes['exception.message'],
-                                             exception_type=span_event.attributes['exception.type'],
-                                             exception_stack=stack_trace,
-                                             name=self._generate_error_flow_name(exception_type, stacks[0]),
-                                             timestamp=str(span_event.timestamp),
-                                             stacks=stacks)
-                    error_events.append(error_event)
-                    events.append(_create_proto_event(span_event))
-
-            if error_events:
-                spans_infos.append(
-                    ExportRequest.SpanInformation(span_id=str(span.context.span_id),
-                                                  trace_id=str(span.context.trace_id),
-                                                  error_events=error_events,
-                                                  events=events))
-        return spans_infos
 
     def _extract_error_events(self, spans: typing.Sequence[Span]):
         spans_by_id = {span.context.span_id: span for span in spans}
