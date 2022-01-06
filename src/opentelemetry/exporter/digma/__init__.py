@@ -30,22 +30,6 @@ class DigmaExporter(SpanExporter):
         self._closed = False
         super().__init__()
 
-    @staticmethod
-    def _generate_error_flow_name(exception_type: str, error_frame_stack: ErrorFrameStack):
-        return f"{exception_type} from {error_frame_stack.frames[-1].module_name}"
-
-    @staticmethod
-    def _forward_slash_for_paths(file_path: str) -> str:
-        return file_path.replace('\\', '/')
-
-    @staticmethod
-    def _spans_contain_exception_event(spans: typing.Sequence[Span] ):
-        for span in spans:
-            for event in span.events:
-                if event.name == 'exception':
-                    return True
-        return False
-
     def export(self, spans: typing.Sequence[Span]) -> SpanExportResult:
 
         if not self._spans_contain_exception_event(spans):
@@ -71,7 +55,24 @@ class DigmaExporter(SpanExporter):
             response = stub.Export(export_request)
             print("Greeter client received: " + response.message)
 
-    def _extract_error_events(self, spans: typing.Sequence[Span]):
+    @staticmethod
+    def _generate_error_flow_name(exception_type: str, error_frame_stack: ErrorFrameStack):
+        return f"{exception_type} from {error_frame_stack.frames[-1].module_name}"
+
+    @staticmethod
+    def _forward_slash_for_paths(file_path: str) -> str:
+        return file_path.replace('\\', '/')
+
+    @staticmethod
+    def _spans_contain_exception_event(spans: typing.Sequence[Span] ):
+        for span in spans:
+            for event in span.events:
+                if event.name == 'exception':
+                    return True
+        return False
+
+    @staticmethod
+    def _extract_error_events(spans: typing.Sequence[Span]):
         spans_by_id = {span.context.span_id: span for span in spans}
         roots = common.create_span_hierarchy(spans)
         error_events = []
@@ -107,7 +108,8 @@ class DigmaExporter(SpanExporter):
                             error_event = ErrorEvent(exception_message=span_event.attributes['exception.message'],
                                                      exception_type=span_event.attributes['exception.type'],
                                                      exception_stack=stack_trace,
-                                                     name=self._generate_error_flow_name(exception_type, stacks[0]),
+                                                     name=DigmaExporter._generate_error_flow_name(exception_type,
+                                                                                                  stacks[0]),
                                                      timestamp=str(span_event.timestamp),
                                                      stacks=stacks)
                             events.append(_create_proto_event(span_event))
