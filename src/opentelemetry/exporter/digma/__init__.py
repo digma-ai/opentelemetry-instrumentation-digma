@@ -9,7 +9,7 @@ from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
 from opentelemetry.trace import SpanKind
 
 import opentelemetry.exporter.digma.common as common
-from opentelemetry.exporter.digma.instrumnetation_tools import extend_otel_expansion_recording
+from opentelemetry.exporter.digma.instrumnetation_tools import extend_otel_exception_recording
 from opentelemetry.exporter.digma.proto_conversions import _create_proto_event
 from opentelemetry.exporter.digma.traceback_parser import TracebackParser
 from .proto_conversions import _convert_span_kind, _create_proto_link, _convert_status_code, _create_proto_status, \
@@ -19,7 +19,7 @@ from .v1.digma_pb2_grpc import DigmaCollectorStub
 
 logger = logging.getLogger(__name__)
 
-extend_otel_expansion_recording()
+extend_otel_exception_recording()
 
 
 # Span.add_event = add_event
@@ -43,7 +43,7 @@ class DigmaExporter(SpanExporter):
             environment=os.environ.get('ENVIRONMENT', ''),
             commit_id=os.environ.get('GIT_COMMIT_ID', ''),
             programming_language='python',
-            error_information=errors_info,
+            error_events=errors_info,
             spans=proto_span_infos
         )
         if self._closed:
@@ -127,7 +127,7 @@ class DigmaExporter(SpanExporter):
                         event.handled = False
                     print(f"#{frame.span_id} - {frame.module_path}/{frame.module_name}:{frame.line_number}")
 
-        return ExportRequest.ErrorsInformation(error_events=error_events)
+        return error_events
 
     def shutdown(self) -> None:
         self._closed = True

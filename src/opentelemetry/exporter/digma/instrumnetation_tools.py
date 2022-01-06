@@ -34,5 +34,5 @@ def _get_traceback_with_locals(ex: Exception):
     return full_trace
 
 
-def extend_otel_expansion_recording():
+def extend_otel_exception_recording():
     Span.record_exception = record_exception
