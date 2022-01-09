@@ -16,13 +16,32 @@ from .proto_conversions import _convert_span_kind, _create_proto_link, _convert_
     _create_proto_span
 from .v1.digma_pb2 import ExportRequest, ErrorFrame, ErrorEvent, ErrorFrameStack
 from .v1.digma_pb2_grpc import DigmaCollectorStub
-
+import json
 logger = logging.getLogger(__name__)
 
 extend_otel_exception_recording()
 
 
+class LocalsStat(object):
+    def __init__(self, name, is_none, length,type):
+        self.name=name
+        self.is_none = is_none
+        self.length = length
+        self.type =type
+        super().__init__()
+
 # Span.add_event = add_event
+class LocalsFrame(object):
+    def __init__(self, module_path :str, module_name:str, executed_code :str,
+                 line_number: str, module_class :str, local_stats: typing.List[LocalsStat]) -> None:
+        super().__init__()
+        self.module_class = module_class
+        self.line_number = line_number
+        self.executed_code = executed_code
+        self.module_path = module_path
+        self.local_stats=local_stats
+        self.module_name=module_name
+
 
 class DigmaExporter(SpanExporter):
 
@@ -72,6 +91,38 @@ class DigmaExporter(SpanExporter):
         return False
 
     @staticmethod
+    def _parse_locals(locals_string: str):
+        result = []
+        frames = locals_string.split('\n')
+        for frame in frames:
+            dictionary = json.loads(frame)
+            locals_stats_dictionary = dictionary["locals"]
+            local_stats = []
+            for local_stat in locals_stats_dictionary:
+                length =""
+                if 'length' in locals_stats_dictionary[local_stat]:
+                    length=locals_stats_dictionary[local_stat]["length"]
+                stat = LocalsStat(name=local_stat, 
+                                  is_none=locals_stats_dictionary[local_stat]["is_none"], 
+                                  length=length,
+                                  type=locals_stats_dictionary[local_stat]["type"])
+                local_stats.append(stat)
+
+            path = TracebackParser._file_path_normalizer(dictionary['module_path'])
+            result.append(LocalsFrame(module_path=path,
+                                      module_name=dictionary['module_name'],
+                                      executed_code=dictionary['executed_code'],
+                                      line_number=dictionary['line_number'],
+                                      module_class=dictionary['class'],
+                                      local_stats=local_stats))
+
+
+
+
+            '{"module_path": "./main.py/root", "executed code": "user_service.all()", "line number": 88, "locals": {}, "class": ""}'
+        return result
+
+    @staticmethod
     def _extract_error_events(spans: typing.Sequence[Span]):
         spans_by_id = {span.context.span_id: span for span in spans}
         roots = common.create_span_hierarchy(spans)
@@ -86,10 +137,13 @@ class DigmaExporter(SpanExporter):
                     if span_event.name == 'exception':
                         stack_trace = span_event.attributes['exception.stacktrace']
                         full_stack_trace = span_event.attributes['exception.stacktrace.full']
-
+                        locals_stats = span_event.attributes['exception.locals']
+                        #locals = DigmaExporter._parse_locals(locals_stats)
+                        extra_frame_info = json.loads(locals_stats)
                         # We omit the otel stack from recording the exception because they are an artifact
                         stacks = TracebackParser \
                             .parse_error_flow_stacks(full_stack_trace, str(current_span.context.span_id),
+                                                     extra_frame_info=extra_frame_info,
                                                      ignore_list=['opentelemetry/trace/__init__.py',
                                                                   'opentelemetry/sdk/trace/__init__.py'])
                         exception_already_captured = False

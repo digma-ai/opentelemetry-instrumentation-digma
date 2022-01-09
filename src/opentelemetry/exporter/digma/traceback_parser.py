@@ -7,7 +7,7 @@ from dataclasses import dataclass
 from os import path
 from typing import List, Dict, Set
 
-from opentelemetry.exporter.digma.v1.digma_pb2 import ErrorFrameStack, ErrorFrame
+from opentelemetry.exporter.digma.v1.digma_pb2 import ErrorFrameStack, ErrorFrame, ParameterStats
 
 
 @dataclass
@@ -40,7 +40,8 @@ class TracebackParser:
             yield arr[idx * size: idx * size + size]
 
     @staticmethod
-    def parse_error_flow_stacks(stacktrace: str, span_id: str = "", ignore_list=[]) -> List[ErrorFrameStack]:
+    def parse_error_flow_stacks(stacktrace: str, span_id: str = "", extra_frame_info: dict = {}, ignore_list=[]) -> \
+    List[ErrorFrameStack]:
         frames: List[ErrorFrame] = []
         stacks: List[ErrorFrameStack] = []
 
@@ -66,6 +67,23 @@ class TracebackParser:
                 fullpath = match.group(1).strip()
                 code_line_num = match.group(2).strip()
                 func_name = match.group(3).strip()
+
+                func_id = f"{fullpath}/{func_name}:{code_line_num}"
+                class_name = ''
+                params_statistics = []
+
+                if func_id in extra_frame_info:
+                    extra_info = extra_frame_info[func_id]
+                    class_name = extra_info['class']
+                    locals_stats = extra_info['locals']
+                    for local in locals_stats:
+                        local_stats = locals_stats[local]
+                        params_statistics.append(ParameterStats(param_name=local,
+                                                                param_type=local_stats['type'],
+                                                                is_none=local_stats["is_none"],
+                                                                length=int(local_stats["length"]),
+                                                                enum_value=local_stats["enum_value"]))
+
                 normalize_path = TracebackParser._file_path_normalizer(fullpath)
                 line_num += 1
                 line = lines[line_num]
@@ -93,7 +111,9 @@ class TracebackParser:
                                              executed_code=code_line,
                                              line_number=int(code_line_num),
                                              parameters=parameters,
-                                             repeat=repeat))
+                                             repeat=repeat,
+                                             module_class=class_name,
+                                             parameter_stats=params_statistics))
                 continue
             if frames:
                 # if frames are empty,
