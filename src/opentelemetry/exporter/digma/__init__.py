@@ -78,9 +78,6 @@ class DigmaExporter(SpanExporter):
     def _generate_error_flow_name(exception_type: str, error_frame_stack: ErrorFrameStack):
         return f"{exception_type} from {error_frame_stack.frames[-1].module_name}"
 
-    @staticmethod
-    def _forward_slash_for_paths(file_path: str) -> str:
-        return file_path.replace('\\', '/')
 
     @staticmethod
     def _spans_contain_exception_event(spans: typing.Sequence[Span] ):
