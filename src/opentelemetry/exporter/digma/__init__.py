@@ -136,13 +136,12 @@ class DigmaExporter(SpanExporter):
                 for span_event in current_span.events:
                     if span_event.name == 'exception':
                         stack_trace = span_event.attributes['exception.stacktrace']
-                        full_stack_trace = span_event.attributes['exception.stacktrace.full']
                         locals_stats = span_event.attributes['exception.locals']
-                        #locals = DigmaExporter._parse_locals(locals_stats)
                         extra_frame_info = json.loads(locals_stats)
+
                         # We omit the otel stack from recording the exception because they are an artifact
                         stacks = TracebackParser \
-                            .parse_error_flow_stacks(full_stack_trace, str(current_span.context.span_id),
+                            .parse_error_flow_stacks(stack_trace, str(current_span.context.span_id),
                                                      extra_frame_info=extra_frame_info,
                                                      ignore_list=['opentelemetry/trace/__init__.py',
                                                                   'opentelemetry/sdk/trace/__init__.py'])
