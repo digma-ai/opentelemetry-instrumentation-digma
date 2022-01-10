@@ -1,13 +1,18 @@
-import math
+import logging
 import os
 import re
 import site
-import sys
 from dataclasses import dataclass
 from os import path
 from typing import List, Dict, Set
 
+import math
+import sys
+
+from conf import config
 from opentelemetry.exporter.digma.v1.digma_pb2 import ErrorFrameStack, ErrorFrame, ParameterStats
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -41,7 +46,7 @@ class TracebackParser:
 
     @staticmethod
     def parse_error_flow_stacks(stacktrace: str, span_id: str = "", extra_frame_info: dict = {}, ignore_list=[]) -> \
-    List[ErrorFrameStack]:
+            List[ErrorFrameStack]:
         frames: List[ErrorFrame] = []
         stacks: List[ErrorFrameStack] = []
 
@@ -127,8 +132,9 @@ class TracebackParser:
 
     @staticmethod
     def _file_path_normalizer(file_path: str) -> str:
+
         if not path.isabs(file_path):  # case when path start with ./
-            if not file_path.startswith('./'):
+            if not file_path.startswith('./'):  # todo find better way to do it, not os specific
                 return file_path
             file_path = path.relpath(file_path)
             return path.join(path.basename(os.getcwd()), file_path)
@@ -138,9 +144,27 @@ class TracebackParser:
                 normalize_path = file_path[len(prefix) + 1:]
                 return normalize_path
 
-        for prefix in sys.path:
-            prefix_parent = path.dirname(prefix)
-            if file_path.startswith(prefix_parent):
+        project_root = os.environ.get('PROJECT_ROOT', config.PROJECT_ROOT)
+        if project_root:
+            prefix_parent = path.dirname(project_root)
+            if TracebackParser._is_descendant_of(file_path, prefix_parent):
                 normalize_path = file_path[len(prefix_parent) + 1:]
                 return normalize_path
+        # for k, v in sys.modules.items():
+        #     print(k)
+        matches = set()
+        for prefix in sys.path:
+            prefix_parent = path.dirname(prefix)
+            if TracebackParser._is_descendant_of(file_path, prefix_parent):
+                matches.add(prefix_parent)
+        if len(matches) > 1:
+            logger.warning(f"unable to find file '{file_path}', multiple matches found: {str.join(',', matches)}")
+            return file_path
+        if matches:
+            match = next(iter(matches))
+            return file_path[len(match) + 1:]
         return file_path
+
+    @staticmethod
+    def _is_descendant_of(file_path: str, parent_path: str) -> bool:
+        return file_path.startswith(parent_path + os.sep)
