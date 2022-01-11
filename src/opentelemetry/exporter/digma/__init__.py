@@ -114,9 +114,6 @@ class DigmaExporter(SpanExporter):
                                       local_stats=local_stats))
 
 
-
-
-            '{"module_path": "./main.py/root", "executed code": "user_service.all()", "line number": 88, "locals": {}, "class": ""}'
         return result
 
     @staticmethod

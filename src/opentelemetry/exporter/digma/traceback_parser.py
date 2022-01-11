@@ -12,6 +12,8 @@ import sys
 from conf import config
 from opentelemetry.exporter.digma.v1.digma_pb2 import ErrorFrameStack, ErrorFrame, ParameterStats
 
+ROOT_ENV_VARIABLE = 'PROJECT_ROOT'
+
 logger = logging.getLogger(__name__)
 
 
@@ -124,8 +126,14 @@ class TracebackParser:
                 # if frames are empty,
                 # it means done processing all current traceback details
                 # continue until the next traceback
+                exception_info = line.split(':')
+                exception_type = exception_info[0]
+                exception_message = exception_info[1].strip()
+
                 stacks.append(
-                    ErrorFrameStack(frames=frames, exception_type=line.split(':')[0]))
+                    ErrorFrameStack(frames=frames,
+                                    exception_type=exception_type,
+                                    exception_message=exception_message))
                 skip_to_next_traceback = True
             line_num += 1
         return stacks
@@ -144,7 +152,11 @@ class TracebackParser:
                 normalize_path = file_path[len(prefix) + 1:]
                 return normalize_path
 
-        project_root = os.environ.get('PROJECT_ROOT', config.PROJECT_ROOT)
+        if ROOT_ENV_VARIABLE in os.environ:
+            project_root = os.environ.get(ROOT_ENV_VARIABLE)
+        else:
+            project_root = config.PROJECT_ROOT
+
         if project_root:
             prefix_parent = path.dirname(project_root)
             if TracebackParser._is_descendant_of(file_path, prefix_parent):
