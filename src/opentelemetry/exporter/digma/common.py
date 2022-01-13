@@ -4,12 +4,31 @@ from typing import Sequence, List
 from opentelemetry.sdk.trace import Span
 from anytree import Node
 
+IGNORE_LIST = ['opentelemetry/trace/__init__.py',
+               'opentelemetry/sdk/trace/__init__.py']
+
+BUILT_IN_EXCEPTIONS = [
+     "SystemExit",  "KeyboardInterrupt", "GeneratorExit", "StopIteration", "StopAsyncIteration", "ArithmeticError",
+     "FloatingPointError",  "OverflowError", "ZeroDivisionError", "AssertionError", "AttributeError", "BufferError",
+     "EOFError", "ImportError", "ModuleNotFoundError", "LookupError", "IndexError", "KeyError", "MemoryError",
+     "NameError", "UnboundLocalError", "BlockingIOError", "ChildProcessError", "ConnectionError","BrokenPipeError",
+     "ConnectionAbortedError", "ConnectionRefusedError", "ConnectionResetError", "FileExistsError",
+     "FileNotFoundError", "InterruptedError", "IsADirectoryError", "NotADirectoryError", "PermissionError",
+     "ProcessLookupError", "TimeoutError", "ReferenceError", "RuntimeError", "NotImplementedError", "RecursionError",
+     "SyntaxError", "IndentationError", "TabError", "SystemError", "TypeError", "ValueError", "UnicodeError",
+     "UnicodeDecodeError", "UnicodeEncodeError", "UnicodeTranslateError"
+]
+
 
 def frame_equals(frame1: ErrorFrame, frame2: ErrorFrame):
     return frame1.module_path == frame2.module_path and \
            frame1.executed_code == frame2.executed_code and \
            frame1.line_number == frame2.line_number and \
            frame1.parameters == frame2.parameters
+
+
+def is_builtin_exception(exception):
+    return exception in BUILT_IN_EXCEPTIONS
 
 
 def frame_count(stacks):

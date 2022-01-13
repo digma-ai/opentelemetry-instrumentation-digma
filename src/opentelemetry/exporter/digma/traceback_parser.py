@@ -10,6 +10,7 @@ import math
 import sys
 
 from conf import config
+from opentelemetry.exporter.digma.common import is_builtin_exception
 from opentelemetry.exporter.digma.v1.digma_pb2 import ErrorFrameStack, ErrorFrame, ParameterStats
 
 ROOT_ENV_VARIABLE = 'PROJECT_ROOT'
@@ -85,11 +86,12 @@ class TracebackParser:
                     locals_stats = extra_info['locals']
                     for local in locals_stats:
                         local_stats = locals_stats[local]
+                        print(f"{func_id} {local} {local_stats['type']} {str(local_stats['value'])}")
                         params_statistics.append(ParameterStats(param_name=local,
                                                                 param_type=local_stats['type'],
                                                                 is_none=local_stats["is_none"],
                                                                 length=int(local_stats["length"]),
-                                                                enum_value=local_stats["enum_value"]))
+                                                                value=str(local_stats["value"])))
 
                 normalize_path = TracebackParser._file_path_normalizer(fullpath)
                 line_num += 1
@@ -130,10 +132,14 @@ class TracebackParser:
                 exception_type = exception_info[0]
                 exception_message = exception_info[1].strip()
 
+                unexpected = is_builtin_exception(exception_type) \
+                             and 'raise' not in line
+
                 stacks.append(
                     ErrorFrameStack(frames=frames,
                                     exception_type=exception_type,
-                                    exception_message=exception_message))
+                                    exception_message=exception_message,
+                                    unexpected=unexpected))
                 skip_to_next_traceback = True
             line_num += 1
         return stacks

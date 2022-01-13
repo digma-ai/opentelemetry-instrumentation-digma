@@ -40,13 +40,14 @@ def _extract_local_info(local_name, local_obj) -> dict:
     local_stats = {"length": "",
                    "is_none": (local_obj == 'None'),
                    "type": str(type(local_obj)),
-                   "enum_value": ""}
+                   "value": ""}
 
     if isinstance(local_obj, list) or isinstance(local_obj, str):
         local_stats["length"] = str(len(local_obj))
 
-    if isinstance(local_obj, Enum):
-        local_stats["enum_value"] = local_obj
+    elif isinstance(local_obj, Enum) or isinstance(local_obj, float)\
+            or isinstance(local_obj, int) or isinstance(local_obj, bool):
+        local_stats["value"] = str(local_obj)
 
     return local_stats
 

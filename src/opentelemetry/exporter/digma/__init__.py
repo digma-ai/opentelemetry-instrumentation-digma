@@ -23,11 +23,12 @@ extend_otel_exception_recording()
 
 
 class LocalsStat(object):
-    def __init__(self, name, is_none, length,type):
+    def __init__(self, name, is_none, length,type, value):
         self.name=name
         self.is_none = is_none
         self.length = length
         self.type =type
+        self.value=value
         super().__init__()
 
 # Span.add_event = add_event
@@ -96,12 +97,11 @@ class DigmaExporter(SpanExporter):
             locals_stats_dictionary = dictionary["locals"]
             local_stats = []
             for local_stat in locals_stats_dictionary:
-                length =""
-                if 'length' in locals_stats_dictionary[local_stat]:
-                    length=locals_stats_dictionary[local_stat]["length"]
+
                 stat = LocalsStat(name=local_stat, 
                                   is_none=locals_stats_dictionary[local_stat]["is_none"], 
-                                  length=length,
+                                  length=locals_stats_dictionary[local_stat]["length"],
+                                  value=locals_stats_dictionary[local_stat]["value"],
                                   type=locals_stats_dictionary[local_stat]["type"])
                 local_stats.append(stat)
 
@@ -137,8 +137,7 @@ class DigmaExporter(SpanExporter):
                         stacks = TracebackParser \
                             .parse_error_flow_stacks(stack_trace, str(current_span.context.span_id),
                                                      extra_frame_info=extra_frame_info,
-                                                     ignore_list=['opentelemetry/trace/__init__.py',
-                                                                  'opentelemetry/sdk/trace/__init__.py'])
+                                                     ignore_list=common.IGNORE_LIST)
                         exception_already_captured = False
                         for existing_event in span_path_events:
                             contained_frames = common.get_contained_frames(stacks, existing_event.stacks)
@@ -152,6 +151,7 @@ class DigmaExporter(SpanExporter):
 
                         if not exception_already_captured:
                             exception_type = span_event.attributes['exception.type']
+
                             error_event = ErrorEvent(exception_message=span_event.attributes['exception.message'],
                                                      exception_type=span_event.attributes['exception.type'],
                                                      exception_stack=stack_trace,
