@@ -11,10 +11,10 @@ BUILT_IN_EXCEPTIONS = [
      "SystemExit",  "KeyboardInterrupt", "GeneratorExit", "StopIteration", "StopAsyncIteration", "ArithmeticError",
      "FloatingPointError",  "OverflowError", "ZeroDivisionError", "AssertionError", "AttributeError", "BufferError",
      "EOFError", "ImportError", "ModuleNotFoundError", "LookupError", "IndexError", "KeyError", "MemoryError",
-     "NameError", "UnboundLocalError", "BlockingIOError", "ChildProcessError", "ConnectionError","BrokenPipeError",
-     "ConnectionAbortedError", "ConnectionRefusedError", "ConnectionResetError", "FileExistsError",
+     "NameError", "UnboundLocalError", "BlockingIOError", "ChildProcessError",
+      "ConnectionResetError", "FileExistsError",
      "FileNotFoundError", "InterruptedError", "IsADirectoryError", "NotADirectoryError", "PermissionError",
-     "ProcessLookupError", "TimeoutError", "ReferenceError", "RuntimeError", "NotImplementedError", "RecursionError",
+     "ProcessLookupError", "ReferenceError", "RuntimeError", "NotImplementedError", "RecursionError",
      "SyntaxError", "IndentationError", "TabError", "SystemError", "TypeError", "ValueError", "UnicodeError",
      "UnicodeDecodeError", "UnicodeEncodeError", "UnicodeTranslateError"
 ]
