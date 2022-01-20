@@ -22,7 +22,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   syntax='proto3',
   serialized_options=b'\n\037io.opentelemetry.proto.digma.v1B\nDigmaProtoP\001\252\002\017digma_collector',
   create_key=_descriptor._internal_create_key,
-  serialized_pb=b'\n+opentelemetry/exporter/digma/v1/digma.proto\x12\x1copentelemetry.proto.digma.v1\x1a*opentelemetry/proto/common/v1/common.proto\x1a(opentelemetry/proto/trace/v1/trace.proto\x1a.opentelemetry/proto/resource/v1/resource.proto\"\xe1\x02\n\nErrorFrame\x12\x13\n\x0bmodule_name\x18\x01 \x01(\t\x12\x13\n\x0bmodule_path\x18\x02 \x01(\t\x12\x15\n\rexecuted_code\x18\x03 \x01(\t\x12\x13\n\x0bline_number\x18\x04 \x01(\x05\x12L\n\nparameters\x18\x05 \x03(\x0b\x32\x38.opentelemetry.proto.digma.v1.ErrorFrame.ParametersEntry\x12\x0e\n\x06repeat\x18\x06 \x01(\x05\x12\x0f\n\x07span_id\x18\x07 \x01(\t\x12\x45\n\x0fparameter_stats\x18\x08 \x03(\x0b\x32,.opentelemetry.proto.digma.v1.ParameterStats\x12\x14\n\x0cmodule_class\x18\t \x01(\t\x1a\x31\n\x0fParametersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"h\n\x0eParameterStats\x12\x12\n\nparam_name\x18\x01 \x01(\t\x12\x12\n\nparam_type\x18\x02 \x01(\t\x12\x0e\n\x06length\x18\x03 \x01(\x05\x12\x0f\n\x07is_none\x18\x04 \x01(\x08\x12\r\n\x05value\x18\x05 \x01(\t\"\x92\x01\n\x0f\x45rrorFrameStack\x12\x38\n\x06\x66rames\x18\x01 \x03(\x0b\x32(.opentelemetry.proto.digma.v1.ErrorFrame\x12\x16\n\x0e\x65xception_type\x18\x02 \x01(\t\x12\x19\n\x11\x65xception_message\x18\x03 \x01(\t\x12\x12\n\nunexpected\x18\x04 \x01(\x08\"\xdd\x01\n\nErrorEvent\x12=\n\x06stacks\x18\x01 \x03(\x0b\x32-.opentelemetry.proto.digma.v1.ErrorFrameStack\x12\x19\n\x11\x65xception_message\x18\x02 \x01(\t\x12\x16\n\x0e\x65xception_type\x18\x03 \x01(\t\x12\x17\n\x0f\x65xception_stack\x18\x04 \x01(\t\x12\x11\n\ttimestamp\x18\x05 \x01(\t\x12\x0c\n\x04name\x18\x06 \x01(\t\x12\x0f\n\x07handled\x18\x07 \x01(\x08\x12\x12\n\nunexpected\x18\x08 \x01(\x08\"\xc8\x01\n\rExportRequest\x12\x13\n\x0b\x65nvironment\x18\x02 \x01(\t\x12\x11\n\tcommit_id\x18\x03 \x01(\t\x12\x1c\n\x14programming_language\x18\x04 \x01(\t\x12>\n\x0c\x65rror_events\x18\x05 \x03(\x0b\x32(.opentelemetry.proto.digma.v1.ErrorEvent\x12\x31\n\x05spans\x18\x07 \x03(\x0b\x32\".opentelemetry.proto.trace.v1.Span\"!\n\x0e\x45xportResponse\x12\x0f\n\x07message\x18\x01 \x01(\t2u\n\x0e\x44igmaCollector\x12\x63\n\x06\x45xport\x12+.opentelemetry.proto.digma.v1.ExportRequest\x1a,.opentelemetry.proto.digma.v1.ExportResponseBA\n\x1fio.opentelemetry.proto.digma.v1B\nDigmaProtoP\x01\xaa\x02\x0f\x64igma_collectorb\x06proto3'
+  serialized_pb=b'\n+opentelemetry/exporter/digma/v1/digma.proto\x12\x1copentelemetry.proto.digma.v1\x1a*opentelemetry/proto/common/v1/common.proto\x1a(opentelemetry/proto/trace/v1/trace.proto\x1a.opentelemetry/proto/resource/v1/resource.proto\"\xe1\x02\n\nErrorFrame\x12\x13\n\x0bmodule_name\x18\x01 \x01(\t\x12\x13\n\x0bmodule_path\x18\x02 \x01(\t\x12\x15\n\rexecuted_code\x18\x03 \x01(\t\x12\x13\n\x0bline_number\x18\x04 \x01(\x05\x12L\n\nparameters\x18\x05 \x03(\x0b\x32\x38.opentelemetry.proto.digma.v1.ErrorFrame.ParametersEntry\x12\x0e\n\x06repeat\x18\x06 \x01(\x05\x12\x0f\n\x07span_id\x18\x07 \x01(\t\x12\x45\n\x0fparameter_stats\x18\x08 \x03(\x0b\x32,.opentelemetry.proto.digma.v1.ParameterStats\x12\x14\n\x0cmodule_class\x18\t \x01(\t\x1a\x31\n\x0fParametersEntry\x12\x0b\n\x03key\x18\x01 \x01(\t\x12\r\n\x05value\x18\x02 \x01(\t:\x02\x38\x01\"h\n\x0eParameterStats\x12\x12\n\nparam_name\x18\x01 \x01(\t\x12\x12\n\nparam_type\x18\x02 \x01(\t\x12\x0e\n\x06length\x18\x03 \x01(\x05\x12\x0f\n\x07is_none\x18\x04 \x01(\x08\x12\r\n\x05value\x18\x05 \x01(\t\"\x92\x01\n\x0f\x45rrorFrameStack\x12\x38\n\x06\x66rames\x18\x01 \x03(\x0b\x32(.opentelemetry.proto.digma.v1.ErrorFrame\x12\x16\n\x0e\x65xception_type\x18\x02 \x01(\t\x12\x19\n\x11\x65xception_message\x18\x03 \x01(\t\x12\x12\n\nunexpected\x18\x04 \x01(\x08\"\xdd\x01\n\nErrorEvent\x12=\n\x06stacks\x18\x01 \x03(\x0b\x32-.opentelemetry.proto.digma.v1.ErrorFrameStack\x12\x19\n\x11\x65xception_message\x18\x02 \x01(\t\x12\x16\n\x0e\x65xception_type\x18\x03 \x01(\t\x12\x17\n\x0f\x65xception_stack\x18\x04 \x01(\t\x12\x11\n\ttimestamp\x18\x05 \x01(\t\x12\x0c\n\x04name\x18\x06 \x01(\t\x12\x0f\n\x07handled\x18\x07 \x01(\x08\x12\x12\n\nunexpected\x18\x08 \x01(\x08\"\x80\x01\n\x0c\x45xtendedSpan\x12\x30\n\x04\x62\x61se\x18\x01 \x01(\x0b\x32\".opentelemetry.proto.trace.v1.Span\x12>\n\x0c\x65rror_events\x18\x02 \x03(\x0b\x32(.opentelemetry.proto.digma.v1.ErrorEvent\"\x90\x01\n\rExportRequest\x12\x13\n\x0b\x65nvironment\x18\x02 \x01(\t\x12\x11\n\tcommit_id\x18\x03 \x01(\t\x12\x1c\n\x14programming_language\x18\x04 \x01(\t\x12\x39\n\x05spans\x18\x07 \x03(\x0b\x32*.opentelemetry.proto.digma.v1.ExtendedSpan\"!\n\x0e\x45xportResponse\x12\x0f\n\x07message\x18\x01 \x01(\t2u\n\x0e\x44igmaCollector\x12\x63\n\x06\x45xport\x12+.opentelemetry.proto.digma.v1.ExportRequest\x1a,.opentelemetry.proto.digma.v1.ExportResponseBA\n\x1fio.opentelemetry.proto.digma.v1B\nDigmaProtoP\x01\xaa\x02\x0f\x64igma_collectorb\x06proto3'
   ,
   dependencies=[opentelemetry_dot_proto_dot_common_dot_v1_dot_common__pb2.DESCRIPTOR,opentelemetry_dot_proto_dot_trace_dot_v1_dot_trace__pb2.DESCRIPTOR,opentelemetry_dot_proto_dot_resource_dot_v1_dot_resource__pb2.DESCRIPTOR,])
 
@@ -349,6 +349,45 @@ _ERROREVENT = _descriptor.Descriptor(
 )
 
 
+_EXTENDEDSPAN = _descriptor.Descriptor(
+  name='ExtendedSpan',
+  full_name='opentelemetry.proto.digma.v1.ExtendedSpan',
+  filename=None,
+  file=DESCRIPTOR,
+  containing_type=None,
+  create_key=_descriptor._internal_create_key,
+  fields=[
+    _descriptor.FieldDescriptor(
+      name='base', full_name='opentelemetry.proto.digma.v1.ExtendedSpan.base', index=0,
+      number=1, type=11, cpp_type=10, label=1,
+      has_default_value=False, default_value=None,
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+    _descriptor.FieldDescriptor(
+      name='error_events', full_name='opentelemetry.proto.digma.v1.ExtendedSpan.error_events', index=1,
+      number=2, type=11, cpp_type=10, label=3,
+      has_default_value=False, default_value=[],
+      message_type=None, enum_type=None, containing_type=None,
+      is_extension=False, extension_scope=None,
+      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
+  ],
+  extensions=[
+  ],
+  nested_types=[],
+  enum_types=[
+  ],
+  serialized_options=None,
+  is_extendable=False,
+  syntax='proto3',
+  extension_ranges=[],
+  oneofs=[
+  ],
+  serialized_start=1047,
+  serialized_end=1175,
+)
+
+
 _EXPORTREQUEST = _descriptor.Descriptor(
   name='ExportRequest',
   full_name='opentelemetry.proto.digma.v1.ExportRequest',
@@ -379,14 +418,7 @@ _EXPORTREQUEST = _descriptor.Descriptor(
       is_extension=False, extension_scope=None,
       serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
     _descriptor.FieldDescriptor(
-      name='error_events', full_name='opentelemetry.proto.digma.v1.ExportRequest.error_events', index=3,
-      number=5, type=11, cpp_type=10, label=3,
-      has_default_value=False, default_value=[],
-      message_type=None, enum_type=None, containing_type=None,
-      is_extension=False, extension_scope=None,
-      serialized_options=None, file=DESCRIPTOR,  create_key=_descriptor._internal_create_key),
-    _descriptor.FieldDescriptor(
-      name='spans', full_name='opentelemetry.proto.digma.v1.ExportRequest.spans', index=4,
+      name='spans', full_name='opentelemetry.proto.digma.v1.ExportRequest.spans', index=3,
       number=7, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -404,8 +436,8 @@ _EXPORTREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1047,
-  serialized_end=1247,
+  serialized_start=1178,
+  serialized_end=1322,
 )
 
 
@@ -436,8 +468,8 @@ _EXPORTRESPONSE = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=1249,
-  serialized_end=1282,
+  serialized_start=1324,
+  serialized_end=1357,
 )
 
 _ERRORFRAME_PARAMETERSENTRY.containing_type = _ERRORFRAME
@@ -445,12 +477,14 @@ _ERRORFRAME.fields_by_name['parameters'].message_type = _ERRORFRAME_PARAMETERSEN
 _ERRORFRAME.fields_by_name['parameter_stats'].message_type = _PARAMETERSTATS
 _ERRORFRAMESTACK.fields_by_name['frames'].message_type = _ERRORFRAME
 _ERROREVENT.fields_by_name['stacks'].message_type = _ERRORFRAMESTACK
-_EXPORTREQUEST.fields_by_name['error_events'].message_type = _ERROREVENT
-_EXPORTREQUEST.fields_by_name['spans'].message_type = opentelemetry_dot_proto_dot_trace_dot_v1_dot_trace__pb2._SPAN
+_EXTENDEDSPAN.fields_by_name['base'].message_type = opentelemetry_dot_proto_dot_trace_dot_v1_dot_trace__pb2._SPAN
+_EXTENDEDSPAN.fields_by_name['error_events'].message_type = _ERROREVENT
+_EXPORTREQUEST.fields_by_name['spans'].message_type = _EXTENDEDSPAN
 DESCRIPTOR.message_types_by_name['ErrorFrame'] = _ERRORFRAME
 DESCRIPTOR.message_types_by_name['ParameterStats'] = _PARAMETERSTATS
 DESCRIPTOR.message_types_by_name['ErrorFrameStack'] = _ERRORFRAMESTACK
 DESCRIPTOR.message_types_by_name['ErrorEvent'] = _ERROREVENT
+DESCRIPTOR.message_types_by_name['ExtendedSpan'] = _EXTENDEDSPAN
 DESCRIPTOR.message_types_by_name['ExportRequest'] = _EXPORTREQUEST
 DESCRIPTOR.message_types_by_name['ExportResponse'] = _EXPORTRESPONSE
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
@@ -491,6 +525,13 @@ ErrorEvent = _reflection.GeneratedProtocolMessageType('ErrorEvent', (_message.Me
   })
 _sym_db.RegisterMessage(ErrorEvent)
 
+ExtendedSpan = _reflection.GeneratedProtocolMessageType('ExtendedSpan', (_message.Message,), {
+  'DESCRIPTOR' : _EXTENDEDSPAN,
+  '__module__' : 'opentelemetry.exporter.digma.v1.digma_pb2'
+  # @@protoc_insertion_point(class_scope:opentelemetry.proto.digma.v1.ExtendedSpan)
+  })
+_sym_db.RegisterMessage(ExtendedSpan)
+
 ExportRequest = _reflection.GeneratedProtocolMessageType('ExportRequest', (_message.Message,), {
   'DESCRIPTOR' : _EXPORTREQUEST,
   '__module__' : 'opentelemetry.exporter.digma.v1.digma_pb2'
@@ -516,8 +557,8 @@ _DIGMACOLLECTOR = _descriptor.ServiceDescriptor(
   index=0,
   serialized_options=None,
   create_key=_descriptor._internal_create_key,
-  serialized_start=1284,
-  serialized_end=1401,
+  serialized_start=1359,
+  serialized_end=1476,
   methods=[
   _descriptor.MethodDescriptor(
     name='Export',

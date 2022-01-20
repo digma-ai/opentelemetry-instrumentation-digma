@@ -61,6 +61,7 @@ def _create_proto_span(span: Span) -> ProtoSpan:
     proto_events = [_create_proto_event(event) for event in span.events]
     links = [_create_proto_link(link) for link in span.links]
     return ProtoSpan(span_id=bytes(str(span.context.span_id), 'utf-8'),
+                     trace_id=bytes(str(span.context.trace_id), 'utf-8'),
                      parent_span_id=bytes(str(span.parent.span_id), 'utf-8') if span.parent else None,
                      name=span.name, kind=_convert_span_kind(span.kind), start_time_unix_nano=span.start_time,
                      end_time_unix_nano=span.end_time, dropped_attributes_count=span.dropped_attributes,
