@@ -3,9 +3,10 @@ from .v1.digma_pb2 import ExportRequest, ErrorFrame, ErrorEvent, ErrorFrameStack
 from typing import Sequence, List
 from opentelemetry.sdk.trace import Span
 from anytree import Node
+import os
 
-IGNORE_LIST = ['opentelemetry/trace/__init__.py',
-               'opentelemetry/sdk/trace/__init__.py']
+IGNORE_LIST = [os.path.join('opentelemetry', 'trace', '__init__.py'),
+               os.path.join('opentelemetry', 'sdk', 'trace', '__init__.py')]
 
 BUILT_IN_EXCEPTIONS = [
      "SystemExit",  "KeyboardInterrupt", "GeneratorExit", "StopIteration", "StopAsyncIteration", "ArithmeticError",
