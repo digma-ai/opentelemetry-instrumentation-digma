@@ -133,7 +133,7 @@ class TracebackParser:
                 exception_message = exception_info[1].strip()
 
                 unexpected = is_builtin_exception(exception_type) \
-                             and 'raise' not in line
+                             and 'raise' not in lines[line_num-1]
 
                 stacks.append(
                     ErrorFrameStack(frames=frames,
