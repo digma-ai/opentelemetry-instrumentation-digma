@@ -8,6 +8,7 @@ from opentelemetry.sdk.trace import Span
 from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
 
 import opentelemetry.exporter.digma.common as common
+from conf import LazyConfig
 from opentelemetry.exporter.digma.instrumnetation_tools import extend_otel_exception_recording
 from opentelemetry.exporter.digma.proto_conversions import _create_proto_event
 from opentelemetry.exporter.digma.traceback_parser import TracebackParser
@@ -15,6 +16,7 @@ from .proto_conversions import _convert_span_kind, _create_proto_link, _convert_
     _create_proto_span
 from .v1.digma_pb2 import ExportRequest, ExtendedSpan, ErrorFrame, ErrorEvent, ErrorFrameStack
 from .v1.digma_pb2_grpc import DigmaCollectorStub
+from conf import config
 
 logger = logging.getLogger(__name__)
 
@@ -22,6 +24,8 @@ extend_otel_exception_recording()
 
 
 class LocalsStat(object):
+
+
     def __init__(self, name, is_none, length,type, value):
         self.name=name
         self.is_none = is_none
@@ -45,6 +49,9 @@ class LocalsFrame(object):
 
 class DigmaExporter(SpanExporter):
 
+    SERVICE_PORT_VAR = "DIGMA_PORT"
+    SERVICE_ADDRESS_VAR = "DIGMA_SERVER"
+
     def __init__(self) -> None:
         self._closed = False
         super().__init__()
@@ -66,7 +73,8 @@ class DigmaExporter(SpanExporter):
             logger.warning("Exporter already shutdown, ignoring batch")
             return SpanExportResult.FAILURE
 
-        channel = grpc.insecure_channel('localhost:5050')
+        address, port = self._get_service_server_and_port()
+        channel = grpc.insecure_channel(f'{address}:{port}')
 
         def process_response(call):
             print("Greeter client received: " + call.result().message)
@@ -75,6 +83,27 @@ class DigmaExporter(SpanExporter):
         stub = DigmaCollectorStub(channel)
         call_future = stub.Export.future(export_request)
         call_future.add_done_callback(process_response)
+
+    def _get_service_server_and_port(self):
+        backend_port = 5050
+
+        if self.SERVICE_PORT_VAR in os.environ:
+            backend_port = os.environ.get(self.SERVICE_PORT_VAR)
+        elif hasattr(config, "DIGMA_PORT"):
+            backend_port = config.DIGMA_PORT
+        else:
+            backend_port = '5050'
+
+        if self.SERVICE_PORT_VAR in os.environ:
+            backend_address = os.environ.get(self.SERVICE_ADDRESS_VAR)
+        elif hasattr(config, "DIGMA_SERVER"):
+            backend_address = config.DIGMA_SERVER
+        else:
+            backend_address = 'localhost'
+
+        return backend_address, backend_port
+
+
 
     @staticmethod
     def _generate_error_flow_name(exception_type: str, error_frame_stack: ErrorFrameStack):
