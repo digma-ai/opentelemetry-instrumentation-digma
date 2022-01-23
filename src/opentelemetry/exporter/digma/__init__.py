@@ -116,6 +116,7 @@ class DigmaExporter(SpanExporter):
         expanded_spans: List[ExtendedSpan] = []
         for span in spans:
             expanded_spans.append(ExtendedSpan(base=_create_proto_span(span),
+                                               service_name=span.resource.attributes['service.name'],
                                                error_events=list(DigmaExporter._extract_error_events(span))))
             print(span.context.trace_id)
         return expanded_spans
