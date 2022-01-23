@@ -1,12 +1,11 @@
+import json
 import logging
 import os
 from typing import Sequence, List
 
 import grpc
-from anytree import PreOrderIter
 from opentelemetry.sdk.trace import Span
 from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
-from opentelemetry.trace import SpanKind
 
 import opentelemetry.exporter.digma.common as common
 from opentelemetry.exporter.digma.instrumnetation_tools import extend_otel_exception_recording
@@ -16,7 +15,7 @@ from .proto_conversions import _convert_span_kind, _create_proto_link, _convert_
     _create_proto_span
 from .v1.digma_pb2 import ExportRequest, ExtendedSpan, ErrorFrame, ErrorEvent, ErrorFrameStack
 from .v1.digma_pb2_grpc import DigmaCollectorStub
-import json
+
 logger = logging.getLogger(__name__)
 
 extend_otel_exception_recording()
