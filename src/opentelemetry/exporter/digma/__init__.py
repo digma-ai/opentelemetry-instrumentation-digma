@@ -67,10 +67,15 @@ class DigmaExporter(SpanExporter):
             logger.warning("Exporter already shutdown, ignoring batch")
             return SpanExportResult.FAILURE
 
-        with grpc.insecure_channel('localhost:5050') as channel:
-            stub = DigmaCollectorStub(channel)
-            response = stub.Export(export_request)
-            print("Greeter client received: " + response.message)
+        channel = grpc.insecure_channel('localhost:5050')
+
+        def process_response(call):
+            print("Greeter client received: " + call.result().message)
+            channel.close()
+
+        stub = DigmaCollectorStub(channel)
+        call_future = stub.Export.future(export_request)
+        call_future.add_done_callback(process_response)
 
     @staticmethod
     def _generate_error_flow_name(exception_type: str, error_frame_stack: ErrorFrameStack):
