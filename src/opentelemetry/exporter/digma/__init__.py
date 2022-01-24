@@ -58,9 +58,6 @@ class DigmaExporter(SpanExporter):
 
     def export(self, spans: Sequence[Span]) -> SpanExportResult:
 
-        if not self._spans_contain_exception_event(spans):
-            return SpanExportResult.SUCCESS
-
         extended_spans = self._build_extended_spans(spans)
 
         export_request = ExportRequest(
@@ -109,14 +106,6 @@ class DigmaExporter(SpanExporter):
     def _generate_error_flow_name(exception_type: str, error_frame_stack: ErrorFrameStack):
         return f"{exception_type} from {error_frame_stack.frames[-1].module_name}"
 
-
-    @staticmethod
-    def _spans_contain_exception_event(spans: Sequence[Span]) -> bool:
-        for span in spans:
-            for event in span.events:
-                if event.name == 'exception':
-                    return True
-        return False
 
     @staticmethod
     def _parse_locals(locals_string: str) -> List[LocalsFrame]:
