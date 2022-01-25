@@ -66,7 +66,7 @@ def _extract_frames_info(ex: Exception):
         locals_stats = {}
         frame_class = ""
         if frame.f_locals:
-            for local in frame.f_locals:
+            for local in list(frame.f_locals):
                 localobj = frame.f_locals[local]
                 if local == 'self':
                     frame_class = type(localobj).__name__
