@@ -56,8 +56,25 @@ class DigmaExporter(SpanExporter):
         self._closed = False
         super().__init__()
 
+    def _test_overrides(self, spans):
+        root_span = [span for span in spans if 'x-simulated-time' in span.attributes][0]
+        if root_span:
+            new_time = int(root_span.attributes['x-simulated-time'])
+
+            for span in spans:
+                delta = span.start_time-root_span.start_time
+                duration = span.end_time-span.start_time
+
+                for event in span.events:
+                    delta = event.timestamp - span.start_time
+                    event._timestamp=new_time+delta
+
+                span._start_time = new_time + delta
+                span._end_time = span.start_time + duration
+
     def export(self, spans: Sequence[Span]) -> SpanExportResult:
 
+        self._test_overrides(spans)
         extended_spans = self._build_extended_spans(spans)
 
         export_request = ExportRequest(
@@ -74,7 +91,7 @@ class DigmaExporter(SpanExporter):
         channel = grpc.insecure_channel(f'{address}:{port}')
 
         def process_response(call):
-            print("Greeter client received: " + call.result().message)
+            logger.info("Greeter client received: " + call.result().message)
             channel.close()
 
         stub = DigmaCollectorStub(channel)
