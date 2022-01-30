@@ -1,8 +1,7 @@
 import json
 import logging
 import os
-from typing import Sequence, List
-
+from typing import Sequence, List,Callable
 import grpc
 from opentelemetry.sdk.trace import Span
 from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
@@ -52,29 +51,18 @@ class DigmaExporter(SpanExporter):
     SERVICE_PORT_VAR = "DIGMA_PORT"
     SERVICE_ADDRESS_VAR = "DIGMA_SERVER"
 
-    def __init__(self) -> None:
+    def __init__(self, pre_processors: List[Callable[[Sequence[Span]],
+                 None]] = None) -> None:
         self._closed = False
+        self.pre_processors = pre_processors
         super().__init__()
-
-    def _test_overrides(self, spans):
-        root_span = [span for span in spans if 'x-simulated-time' in span.attributes][0]
-        if root_span:
-            new_time = int(root_span.attributes['x-simulated-time'])
-
-            for span in spans:
-                delta = span.start_time-root_span.start_time
-                duration = span.end_time-span.start_time
-
-                for event in span.events:
-                    delta = event.timestamp - span.start_time
-                    event._timestamp=new_time+delta
-
-                span._start_time = new_time + delta
-                span._end_time = span.start_time + duration
 
     def export(self, spans: Sequence[Span]) -> SpanExportResult:
 
-        self._test_overrides(spans)
+        if self.pre_processors:
+            for processor in self.pre_processors:
+                processor(spans)
+
         extended_spans = self._build_extended_spans(spans)
 
         export_request = ExportRequest(
