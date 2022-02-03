@@ -1,19 +1,16 @@
 import logging
+import math
 import os
 import re
 import site
+import sys
 from dataclasses import dataclass
 from os import path
-from typing import List, Dict, Set
+from typing import List, Dict, Set, Optional
 
-import math
-import sys
-
-from conf import config
+import conf
 from opentelemetry.exporter.digma.common import is_builtin_exception
 from opentelemetry.exporter.digma.v1.digma_pb2 import ErrorFrameStack, ErrorFrame, ParameterStats
-
-ROOT_ENV_VARIABLE = 'PROJECT_ROOT'
 
 logger = logging.getLogger(__name__)
 
@@ -53,6 +50,7 @@ class TracebackParser:
         frames: List[ErrorFrame] = []
         stacks: List[ErrorFrameStack] = []
 
+        project_root = conf.try_get_project_root()
         lines = stacktrace.splitlines()
         line_num = 0
         skip_to_next_traceback = True
@@ -86,14 +84,13 @@ class TracebackParser:
                     locals_stats = extra_info['locals']
                     for local in locals_stats:
                         local_stats = locals_stats[local]
-                        print(f"{func_id} {local} {local_stats['type']} {str(local_stats['value'])}")
                         params_statistics.append(ParameterStats(param_name=local,
                                                                 param_type=local_stats['type'],
                                                                 is_none=local_stats["is_none"],
                                                                 length=int(local_stats["length"]),
                                                                 value=str(local_stats["value"])))
 
-                normalize_path = TracebackParser._file_path_normalizer(fullpath)
+                normalize_path = TracebackParser._file_path_normalizer(fullpath, project_root)
                 line_num += 1
                 line = lines[line_num]
                 if bool(TracebackParser._frame_code_line_pattern.match(line)):
@@ -145,7 +142,7 @@ class TracebackParser:
         return stacks
 
     @staticmethod
-    def _file_path_normalizer(file_path: str) -> str:
+    def _file_path_normalizer(file_path: str, project_root: Optional[str] = None) -> str:
 
         if not path.isabs(file_path):  # case when path start with ./
             if not file_path.startswith('./'):  # todo find better way to do it, not os specific
@@ -157,11 +154,6 @@ class TracebackParser:
             if file_path.startswith(prefix):
                 normalize_path = file_path[len(prefix) + 1:]
                 return normalize_path
-
-        if ROOT_ENV_VARIABLE in os.environ:
-            project_root = os.environ.get(ROOT_ENV_VARIABLE)
-        else:
-            project_root = config.PROJECT_ROOT
 
         if project_root:
             prefix_parent = path.dirname(project_root)
@@ -176,7 +168,7 @@ class TracebackParser:
             if TracebackParser._is_descendant_of(file_path, prefix_parent):
                 matches.add(prefix_parent)
         if len(matches) > 1:
-            logger.warning(f"unable to find file '{file_path}', multiple matches found: {str.join(',', matches)}")
+            logger.warning(f"Digma file path normalizer: unable to find file '{file_path}', multiple matches found: {str.join(',', matches)}")
             return file_path
         if matches:
             match = next(iter(matches))
