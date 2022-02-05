@@ -2,10 +2,10 @@ import importlib
 import json
 import logging
 import os
-from typing import Sequence, List, Optional
+from typing import Sequence, List, Optional, Callable
 from urllib.parse import urlparse
-
-from grpc import insecure_channel, StatusCode
+from grpc import insecure_channel
+from grpc import StatusCode
 from opentelemetry.sdk.trace import Span
 from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult, BatchSpanProcessor
 
@@ -31,10 +31,11 @@ def register_batch_digma_exporter(endpoint: Optional[str] = None,
                                   max_queue_size: int = None,
                                   schedule_delay_millis: float = None,
                                   max_export_batch_size: int = None,
-                                  export_timeout_millis: float = None):
+                                  export_timeout_millis: float = None,
+                                  pre_processors: List[Callable[[Sequence[Span]], None]] = None):
     max_export_batch_size = max_export_batch_size if max_export_batch_size else 10
     trace.get_tracer_provider().add_span_processor(
-        BatchSpanProcessor(DigmaExporter(endpoint=endpoint), max_queue_size,
+        BatchSpanProcessor(DigmaExporter(endpoint=endpoint, pre_processors=pre_processors), max_queue_size,
                            schedule_delay_millis,
                            max_export_batch_size, export_timeout_millis))
 
@@ -74,7 +75,9 @@ class LocalsFrame(object):
 class DigmaExporter(SpanExporter):
 
     def __init__(self, endpoint: Optional[str] = None,
-                 insecure: Optional[bool] = None) -> None:
+                 insecure: Optional[bool] = None,
+                 pre_processors: List[Callable[[Sequence[Span]], None]] = None) -> None:
+        self._pre_processors = pre_processors
         endpoint = endpoint or os.environ.get(DIGMA_EXPORTER_ENDPOINT, "http://localhost:5050")
         parsed_url = urlparse(endpoint)
 
@@ -100,6 +103,10 @@ class DigmaExporter(SpanExporter):
             response_deserializer=opentelemetry_dot_exporter_dot_digma_dot_v1_dot_digma__pb2.ExportResponse.FromString)
 
     def export(self, spans: Sequence[Span]) -> SpanExportResult:
+        if self._pre_processors:
+            for processor in self._pre_processors:
+                processor(spans)
+
         extended_spans = self._build_extended_spans(spans)
 
         export_request = ExportRequest(
