@@ -1,7 +1,11 @@
 import importlib
+import logging
 import os
+from typing import Optional
 
-DIGMA_CONFIG_MODULE = 'DIGMA_CONFIG_MODULE'
+from conf.environment_variables import DIGMA_CONFIG_MODULE, PROJECT_ROOT
+
+logger = logging.getLogger(__name__)
 
 
 class LazyConfig:
@@ -14,7 +18,6 @@ class LazyConfig:
         self._wrapped_config = Config(config_module)
 
     def __getattr__(self, name):
-        print('__getattr__')
         if self._wrapped_config is None:
             self._setup()
 
@@ -25,11 +28,29 @@ class LazyConfig:
 
 class Config:
     def __init__(self, settings_module: str):
-        module = importlib.import_module(settings_module)
-        for field in dir(module):
-            if field.isupper():
-                val = getattr(module, field)
-                setattr(self, field, val)
+        try:
+            module = importlib.import_module(settings_module)
+            for field in dir(module):
+                if field.isupper():
+                    val = getattr(module, field)
+                    setattr(self, field, val)
+        except ModuleNotFoundError:
+            logger.error(f"""Couldn't import DIGMA_CONFIG_MODULE: '{settings_module}'.
+            Are you sure it's installed and available on your PYTHONPATH env?
+            Did you forget to activate a virtual environment""")
+            raise
 
 
 config = LazyConfig()
+
+
+def try_get_project_root() -> Optional[str]:
+    try:
+        if PROJECT_ROOT in os.environ:
+            project_root = os.environ.get(PROJECT_ROOT)
+        else:
+            project_root = config.PROJECT_ROOT
+        return project_root
+    except Exception as e:
+        logger.exception(e)
+        return None
