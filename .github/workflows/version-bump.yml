@@ -52,6 +52,7 @@ jobs:
       env:
         COMMIT_MSG: ${{ github.event.head_commit.message }}
       run: |
+        ls -a
         bump2version patch
       if: env.SKIPBUMP == 'FALSE'
 
