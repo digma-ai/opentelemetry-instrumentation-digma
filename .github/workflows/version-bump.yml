@@ -3,7 +3,7 @@ name: Package Build
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   bump-version:
