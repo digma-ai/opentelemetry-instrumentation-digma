@@ -1,1 +1,1 @@
-# opentelemetry-exporter-digma
+# opentelemetry-exporter-digma ˚
