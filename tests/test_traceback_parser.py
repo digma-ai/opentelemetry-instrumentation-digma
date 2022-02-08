@@ -1,14 +1,16 @@
+import os
 import traceback
 from typing import Optional
 from unittest import TestCase
 
-import opentelemetry.exporter.digma.common as common
+from conf import PROJECT_ROOT
 from opentelemetry.exporter.digma import TracebackParser
-from stubs import ExceptionWithParams
 
 
 class TracebackParserTest(TestCase):
-    def test_multiple_traceback(self):
+    def setUp(self):
+        path = os.path.abspath(os.path.dirname(__file__))
+        os.environ.setdefault(PROJECT_ROOT, path)
         def e():
             raise ValueError("e")
 
@@ -37,19 +39,6 @@ class TracebackParserTest(TestCase):
         self.assertEqual(len(frame_stacks), 3)
         # more asserts should be added
 
-    def test_traceback_with_locals(self):
-        try:
-            ExceptionWithParams().throw_exception("1", "2")
-        except Exception as e:
-            exc_stacktrace = common.get_traceback_with_locals(e)
-
-        frame_stacks = TracebackParser.parse_error_flow_stacks(stacktrace=exc_stacktrace)
-        params = frame_stacks[0].frames[1].parameters
-        self.assertIn('arg1', params)
-        self.assertIn('arg2', params)
-
-        self.assertEqual(params['arg1'], "'1'")
-        self.assertEqual(params['arg2'], "'2'")
 
     def test_single_traceback(self):
         try:

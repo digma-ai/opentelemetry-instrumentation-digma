@@ -1,0 +1,73 @@
+name: Tagging
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  bump-version:
+
+    runs-on: ubuntu-latest
+    if: |
+      !startsWith(github.event.head_commit.message, '[SKIP]') &&
+      startsWith(github.event.head_commit.message, '[MAJOR]') ||
+      startsWith(github.event.head_commit.message, '[MINOR]') ||
+      startsWith(github.event.head_commit.message, '[PATCH]')
+      
+      
+
+    steps:
+
+    - uses: actions/checkout@v2
+
+    - name: Setup Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.x'
+
+    - name: setup git config
+      run: |
+        # setup the username and email. I tend to use 'GitHub Actions Bot' with no email by default
+        git config user.name "GitHub Actions Bot"
+        git config user.email "<>"
+
+    - name: Setup env variables
+      run: |
+        echo "SKIPBUMP=FALSE" >> $GITHUB_ENV
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install bump2version
+
+    # If a commit starts with [MAJOR] a new major verion upgrade will be
+    # triggered. Use with caution as Major upgrades denote backwards
+    # incompatibility. Yet I like it to be integrated in the CI
+    - name: Bump Major Version
+      env:
+        COMMIT_MSG: ${{ github.event.head_commit.message }}
+      run: |
+        bump2version major
+        echo "BUMP=TRUE" >> $GITHUB_ENV
+      if: startsWith(github.event.head_commit.message, '[MAJOR]')
+
+    - name: Bump Minor Version
+      env:
+        COMMIT_MSG: ${{ github.event.head_commit.message }}
+      run: |
+        bump2version minor
+        echo "BUMP=TRUE" >> $GITHUB_ENV
+      if: startsWith(github.event.head_commit.message, '[MINOR]')
+
+    # consider making it Default action
+    - name: Bump Patch Version
+      env:
+        COMMIT_MSG: ${{ github.event.head_commit.message }}
+      run: |
+        bump2version patch
+        echo "BUMP=TRUE" >> $GITHUB_ENV
+      if: startsWith(github.event.head_commit.message, '[PATCH]')
+
+    - name: Commit version change to master
+      run: |
+        git push --follow-tags
