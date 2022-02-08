@@ -1,5 +1,9 @@
 import json
 import os
+
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+
 import conf
 from importlib import util
 from opentelemetry.sdk.resources import Resource, DEPLOYMENT_ENVIRONMENT
@@ -34,3 +38,9 @@ class DigmaConfiguration:
             'commitId': os.environ.get('GIT_COMMIT_ID', ''),
             'traceablePaths': json.dumps(self.traceablePaths)
         })
+
+    @property
+    def span_processor(self):
+        otlp_exporter = OTLPSpanExporter(endpoint="http://localhost:5050", insecure=True)
+        span_processor = BatchSpanProcessor(otlp_exporter)
+        return span_processor
