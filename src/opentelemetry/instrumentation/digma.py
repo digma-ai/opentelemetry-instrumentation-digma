@@ -36,7 +36,7 @@ class DigmaConfiguration:
         return Resource(attributes={
             DEPLOYMENT_ENVIRONMENT: os.environ.get('ENVIRONMENT', ''),
             'commitId': os.environ.get('GIT_COMMIT_ID', ''),
-            'traceablePaths': json.dumps(self.traceablePaths)
+            'traceableFilePaths': self.traceablePaths
         })
 
     @property
