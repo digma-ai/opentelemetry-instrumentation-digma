@@ -1,41 +1,38 @@
-import json
+import inspect
 import os
-
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
-
-import conf
 from importlib import util
 from opentelemetry.sdk.resources import Resource, DEPLOYMENT_ENVIRONMENT
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 
 
 class DigmaConfiguration:
 
     def __init__(self):
-        self.traceablePaths = [
-            conf.try_get_project_root().replace('\\', '/')
-        ]
+        self.environment = os.environ.get('ENVIRONMENT', '')
+        self.commitId = os.environ.get('GIT_COMMIT_ID', '')
+        self.traceablePaths = []
 
-    # def trace_this_module(self):
-    #     curframe = inspect.currentframe()
-    #     calframe = inspect.getouterframes(curframe, 2)
-    #     print('caller name:', calframe[1][3])
-    #     return self
+    def trace_this_package(self, root='./'):
+        current_frame = inspect.currentframe()
+        caller_frame = inspect.getouterframes(current_frame)[1]
+        package_root = os.path.realpath(os.path.join(os.path.dirname(caller_frame.filename), root))
+        self.traceablePaths.append(package_root.replace('\\', '/'))
+        return self
 
-    def trace_module(self, module_name: str) -> 'DigmaConfiguration':
+    def trace_package(self, module_name: str) -> 'DigmaConfiguration':
         spec = util.find_spec(module_name)
         if not spec:
             raise ValueError(f'Module {module_name} was not found')
-        # module_path = importlib.import_module(module_name)
-        # module_path.__file__
-        self.traceablePaths.append(os.path.dirname(spec.origin).replace('\\', '/'))
+        for path in spec.submodule_search_locations:
+            self.traceablePaths.append(path.replace('\\', '/'))
         return self
 
     @property
     def resource(self):
         return Resource(attributes={
-            DEPLOYMENT_ENVIRONMENT: os.environ.get('ENVIRONMENT', ''),
-            'commitId': os.environ.get('GIT_COMMIT_ID', ''),
+            DEPLOYMENT_ENVIRONMENT: self.environment,
+            'commitId': self.commitId,
             'traceableFilePaths': self.traceablePaths
         })
 
