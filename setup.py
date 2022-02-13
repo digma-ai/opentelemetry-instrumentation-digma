@@ -3,7 +3,7 @@ import os
 
 BASE_DIR = os.path.dirname(__file__)
 VERSION_FILENAME = os.path.join(
-    BASE_DIR, "src", "opentelemetry", "exporter", "digma", "version.py"
+    BASE_DIR, "version.py"
 )
 
 PACKAGE_INFO = {}

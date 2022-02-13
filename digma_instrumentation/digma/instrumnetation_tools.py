@@ -1,11 +1,12 @@
+import json
+import re
 import sys
 import traceback
 from enum import Enum
 from typing import Optional
-import json
+
 from opentelemetry.sdk.trace import Span
 from opentelemetry.util import types
-import re
 
 default_record_exception = Span.record_exception
 

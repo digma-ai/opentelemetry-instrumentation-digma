@@ -5,5 +5,5 @@ build/
 venv/
 .idea/
 .git/
-src/opentelemetry/exporter/digma/__pycache__/
+digma_instrumentation/opentelemetry/exporter/digma/__pycache__/
 .pytest_cache/
