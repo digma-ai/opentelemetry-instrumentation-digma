@@ -38,7 +38,8 @@ class Configuration:
         return Resource(attributes={
             DEPLOYMENT_ENVIRONMENT: self.environment,
             'commitId': self.commitId,
-            'traceableFilePaths': self.traceablePaths
+            'traceableFilePaths': self.traceablePaths,
+            'workingDirectory': os.getcwd().replace('\\', '/')
         })
 
     @property
