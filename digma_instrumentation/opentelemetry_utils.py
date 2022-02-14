@@ -6,7 +6,7 @@ from opentelemetry.sdk.resources import Resource, SERVICE_NAME
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
-from digma.configuration import Configuration
+from digma_instrumentation.configuration import Configuration
 
 
 def opentelemetry_aiohttp_middleware(name: str):
