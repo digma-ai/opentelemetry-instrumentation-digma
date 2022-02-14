@@ -1,4 +1,4 @@
-from aiohttp import web
+
 from opentelemetry import trace
 from opentelemetry.trace import SpanKind
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
@@ -10,6 +10,7 @@ from digma.configuration import Configuration
 
 
 def opentelemetry_aiohttp_middleware(name: str):
+    from aiohttp import web
     tracer = trace.get_tracer(name)
     @web.middleware
     async def middleware(request: web.Request, handler):
@@ -18,9 +19,9 @@ def opentelemetry_aiohttp_middleware(name: str):
     return middleware
 
 
-def opentelemetry_init(service_name: str, digma_conf: Configuration):
+def opentelemetry_init(service_name: str, digma_conf: Configuration, digma_endpoint: str):
     resource = Resource.create(attributes={SERVICE_NAME: service_name}).merge(digma_conf.resource)
     provider = TracerProvider(resource=resource)
-    provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint="http://localhost:5050", insecure=True)))
+    provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=digma_endpoint, insecure=True)))
     trace.set_tracer_provider(provider)
 
