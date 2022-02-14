@@ -1,7 +1,10 @@
 import inspect
 import os
 from importlib import util
+
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import Resource, DEPLOYMENT_ENVIRONMENT
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 from digma.instrumnetation_tools import extend_otel_exception_recording
 
@@ -37,3 +40,9 @@ class Configuration:
             'commitId': self.commitId,
             'traceableFilePaths': self.traceablePaths
         })
+    
+    @property
+    def span_processor(self):
+        otlp_exporter = OTLPSpanExporter(endpoint="http://localhost:5050", insecure=True)
+        span_processor = BatchSpanProcessor(otlp_exporter)
+        return span_processor
