@@ -1,4 +1,4 @@
-from typing import Sequence
+from typing import Sequence, Dict, List
 
 from opentelemetry import trace
 from opentelemetry.trace import SpanKind
@@ -40,16 +40,22 @@ class OTLPSpanExporterForTests(OTLPSpanExporter):
         return super().export(spans)
 
     @staticmethod
-    def update_timestamps(spans):
-        simulated_spans = [span for span in spans if (span.attributes and 'x-simulated-time' in span.attributes)]
-        if not simulated_spans:
-            return
-        root_span = simulated_spans[0]
-        if root_span:
-            new_time = int(root_span.attributes['x-simulated-time'])
+    def update_timestamps(spans: Sequence[ReadableSpan]):
+        traces: Dict[str, List[ReadableSpan]] = {}
+        for span in spans:
+            trace_id = span.context.trace_id
+            traces.setdefault(trace_id, []).append(span)
 
-            for span in spans:
-                delta = span.start_time - root_span.start_time
+        for trace_id, trace_spans in traces.items():
+            simulated_spans = [span for span in trace_spans if (span.attributes and 'x-simulated-time' in span.attributes)]
+            if not simulated_spans:
+                continue
+
+            root = simulated_spans[0]
+            new_time = int(root.attributes['x-simulated-time'])
+
+            for span in trace_spans:
+                delta = span.start_time - root.start_time
                 duration = span.end_time - span.start_time
 
                 for event in span.events:
