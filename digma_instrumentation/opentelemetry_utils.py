@@ -1,10 +1,11 @@
+from typing import Sequence
 
 from opentelemetry import trace
 from opentelemetry.trace import SpanKind
 from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
 from opentelemetry.sdk.resources import Resource, SERVICE_NAME
-from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from opentelemetry.sdk.trace import TracerProvider, ReadableSpan
+from opentelemetry.sdk.trace.export import BatchSpanProcessor, SpanExportResult
 
 from digma_instrumentation.configuration import Configuration
 
@@ -19,9 +20,41 @@ def opentelemetry_aiohttp_middleware(name: str):
     return middleware
 
 
-def opentelemetry_init(service_name: str, digma_conf: Configuration, digma_endpoint: str):
+def opentelemetry_init(service_name: str, digma_conf: Configuration, digma_endpoint: str, test: bool = False):
     resource = Resource.create(attributes={SERVICE_NAME: service_name}).merge(digma_conf.resource)
+    if test:
+        exporter = OTLPSpanExporterForTests(endpoint=digma_endpoint, insecure=True)
+    else:
+        exporter = OTLPSpanExporter(endpoint=digma_endpoint, insecure=True)
     provider = TracerProvider(resource=resource)
-    provider.add_span_processor(BatchSpanProcessor(OTLPSpanExporter(endpoint=digma_endpoint, insecure=True)))
+    provider.add_span_processor(BatchSpanProcessor(exporter))
     trace.set_tracer_provider(provider)
 
+
+class OTLPSpanExporterForTests(OTLPSpanExporter):
+    def __init__(self, endpoint: str, insecure: bool):
+        super().__init__(endpoint=endpoint, insecure=insecure)
+
+    def export(self, spans: Sequence[ReadableSpan]) -> SpanExportResult:
+        self.update_timestamps(spans)
+        return super().export(spans)
+
+    @staticmethod
+    def update_timestamps(spans):
+        simulated_spans = [span for span in spans if (span.attributes and 'x-simulated-time' in span.attributes)]
+        if not simulated_spans:
+            return
+        root_span = simulated_spans[0]
+        if root_span:
+            new_time = int(root_span.attributes['x-simulated-time'])
+
+            for span in spans:
+                delta = span.start_time - root_span.start_time
+                duration = span.end_time - span.start_time
+
+                for event in span.events:
+                    delta = event.timestamp - span.start_time
+                    event._timestamp = new_time + delta
+
+                span._start_time = new_time + delta
+                span._end_time = span.start_time + duration
