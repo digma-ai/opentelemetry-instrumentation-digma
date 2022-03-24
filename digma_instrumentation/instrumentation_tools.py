@@ -54,8 +54,7 @@ def _create_local(obj_type: str, is_none: bool = False, length: int = 0, value="
         "length": length,
         "is_none": is_none,
         "type": obj_type,
-        "value": value
-    }
+        "value": value}
 
 
 def _extract_class_info(local_name, local_obj):
