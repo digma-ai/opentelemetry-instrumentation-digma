@@ -30,24 +30,31 @@ def record_exception(
     return default_record_exception(self, exception, _attributes, timestamp, escaped)
 
 
-def _get_frame_id(frame,line_number):
+def _get_frame_id(frame, line_number):
     return f"{frame.f_code.co_filename}/{frame.f_code.co_name}:{line_number}"
 
 
-def _extract_local_info(local_name, local_obj) -> dict:
-    local_stats = {"length": 0,
-                   "is_none": (local_obj == 'None'),
-                   "type": str(type(local_obj)),
-                   "value": ""}
+def _extract_local_info(local_obj) -> dict:
+    obj_type = str(type(local_obj))
+    if local_obj is None:
+        return _create_local(obj_type=obj_type, is_none=True)
 
     if isinstance(local_obj, list) or isinstance(local_obj, str):
-        local_stats["length"] = str(len(local_obj))
+        return _create_local(obj_type=obj_type, length=len(local_obj))
 
-    elif isinstance(local_obj, Enum) or isinstance(local_obj, float)\
+    if isinstance(local_obj, Enum) or isinstance(local_obj, float) \
             or isinstance(local_obj, int) or isinstance(local_obj, bool):
-        local_stats["value"] = str(local_obj)
+        return _create_local(obj_type=obj_type, value=str(local_obj))
 
-    return local_stats
+    return _create_local(obj_type=obj_type)
+
+
+def _create_local(obj_type: str, is_none: bool = False, length: int = 0, value=""):
+    return {
+        "length": length,
+        "is_none": is_none,
+        "type": obj_type,
+        "value": value}
 
 
 def _extract_class_info(local_name, local_obj):
@@ -72,7 +79,7 @@ def _extract_frames_info(ex: Exception):
                 if local == 'self':
                     frame_class = type(localobj).__name__
                 else:
-                    locals_stats[local] = _extract_local_info(local, localobj)
+                    locals_stats[local] = _extract_local_info(localobj)
 
             yield _get_frame_id(frame, line), {"class": frame_class, "locals": locals_stats}
 
@@ -93,7 +100,7 @@ def _extra_frame_info(tbe: traceback.TracebackException):
                 if local == 'self':
                     frame_class = _extract_class_info(local, localobj)
                 else:
-                    locals_stats[local] = _extract_local_info(local, localobj)
+                    locals_stats[local] = _extract_local_info(localobj)
 
             yield _get_frame_id(frame), {"class": frame_class, "locals": locals_stats}
 
@@ -102,6 +109,7 @@ def _get_locals_statistics(tbe: traceback):
     # locals = list(_recursively_extract_locals(tbe))
     frame_extra_info = dict(_extract_frames_info(tbe))
     return json.dumps(frame_extra_info)
+
 
 def extend_otel_exception_recording():
     Span.record_exception = record_exception
