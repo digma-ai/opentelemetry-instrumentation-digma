@@ -10,7 +10,7 @@ exec(version_file, PACKAGE_INFO)
 requires = [str(ir) for ir in parse_requirements(Path('requirements.txt').read_text())]
 
 setup(
-    name='opentelemetry-exporter-digma',
+    name='opentelemetry-instrumentation-digma',
     version=PACKAGE_INFO['__version__'],
     author='Roni Dover',
     author_email='rdover@digma.ai',
