@@ -1,5 +1,5 @@
 # opentelemetry-instrumenation-digma
-[![Tests](https://github.com/digma-ai/opentelemetry-exporter-digma/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/digma-ai/opentelemetry-exporter-digma/actions/workflows/unit-tests.yml)
+[![Tests](https://github.com/digma-ai/opentelemetry-exporter-digma/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/digma-ai/opentelemetry-exporter-digma/actions/workflows/unit-tests.yml) [![PyPI version](https://badge.fury.io/py/opentelemetry-instrumentation-digma.svg)](https://badge.fury.io/py/opentelemetry-instrumentation-digma)
 
 This package provides instrumentation helpers and tools to make it easy to set up Digma to work along with your OpenTelemetry instrumentation.
 
