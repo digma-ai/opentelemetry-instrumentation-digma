@@ -34,3 +34,12 @@ jobs:
       with:
         user: __token__
         password: ${{ secrets.PYPI_API_TOKEN }}
+    - name: Build utility package
+      working-directory: ./utility_packages
+      run: python -m build
+    - name: Publish package
+      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
+      with:
+        packages_dir: ./utility_packages/dist
+        user: __token__
+        password: ${{ secrets.PYPI_API_TOKEN }}
