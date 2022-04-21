@@ -4,7 +4,7 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 from opentelemetry import trace
 from opentelemetry.instrumentation.digma.digma_configuration import DigmaConfiguration
-from tests.opentelmetry.instrumentation.digma.otlp_exporter_for_tests import OTLPSpanExporterForTests
+from .otlp_exporter_for_tests import OTLPSpanExporterForTests
 
 
 def digma_opentelemetry_bootstrap_for_testing(service_name: str, digma_backend: str, configuration: DigmaConfiguration):
