@@ -11,13 +11,14 @@ from opentelemetry.util import types
 default_record_exception = Span.record_exception
 
 
-def record_exception(
+def enhanced_record_exception(
         self,
         exception: Exception,
         attributes: types.Attributes = None,
         timestamp: Optional[int] = None,
         escaped: bool = False,
 ) -> None:
+
     ex = sys.exc_info()[1]
     if not ex:
         return None
@@ -112,4 +113,4 @@ def _get_locals_statistics(tbe: traceback):
 
 
 def extend_otel_exception_recording():
-    Span.record_exception = record_exception
+    Span.record_exception = enhanced_record_exception

@@ -1,0 +1,25 @@
+Metadata-Version: 2.1
+Name: opentelemetry-instrumentation-digma
+Version: 0.5.5
+Summary: First step package for digma
+Home-page: UNKNOWN
+Author: Roni Dover
+Author-email: rdover@digma.ai
+License: UNKNOWN
+Project-URL: Bug Reports, https://github.com/digma-ai/opentelemetry-exporter-digma/issues
+Project-URL: Source, https://github.com/digma-ai/opentelemetry-exporter-digma/
+Description: # opentelemetry-instrumenation-digma
+        [![Tests](https://github.com/digma-ai/opentelemetry-exporter-digma/actions/workflows/unit-tests.yml/badge.svg)](https://github.com/digma-ai/opentelemetry-exporter-digma/actions/workflows/unit-tests.yml)
+        
+        This package provides helpers that allow easily adding information via OTEL resource and span attribute that allow Digma to create meangingful insights. 
+        
+        
+        
+Platform: UNKNOWN
+Classifier: Programming Language :: Python :: 3
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Operating System :: OS Independent
+Requires-Python: >=3.6
+Description-Content-Type: text/markdown

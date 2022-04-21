@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 from pkg_resources import parse_requirements
 
 PACKAGE_INFO = {}
-version_file = (Path("digma_instrumentation") / "version.py").read_text()
+version_file = (Path("src/opentelemetry/instrumentation/digma") / "version.py").read_text()
 exec(version_file, PACKAGE_INFO)
 
 requires = [str(ir) for ir in parse_requirements(Path('requirements.txt').read_text())]
