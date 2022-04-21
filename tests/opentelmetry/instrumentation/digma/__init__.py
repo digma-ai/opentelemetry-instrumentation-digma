@@ -7,7 +7,7 @@ from opentelemetry.instrumentation.digma.digma_configuration import DigmaConfigu
 from tests.opentelmetry.instrumentation.digma.test_otlp_exporter import OTLPSpanExporterForTests
 
 
-def opentelemetry_quicksetup_for_testing(service_name: str, digma_backend: str, configuration: DigmaConfiguration):
+def digma_opentelemetry_bootstrap_for_testing(service_name: str, digma_backend: str, configuration: DigmaConfiguration):
     """
     Quickly sets up Digma with the required parametesr based on the OpenTelemetry resource and parameters
     This function is a quick setup for Digma and OTLP, if you already have OTLP set up you probably don't need it.
