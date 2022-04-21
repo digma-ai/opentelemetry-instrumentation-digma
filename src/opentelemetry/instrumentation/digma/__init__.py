@@ -10,7 +10,7 @@ from opentelemetry.instrumentation.digma.instrumentation_extensions import exten
 extend_otel_exception_recording()
 
 
-def digma_opentelmetry_boostrap(service_name: str, digma_backend: str, configuration: DigmaConfiguration):
+def digma_opentelemetry_boostrap(service_name: str, digma_backend: str, configuration: DigmaConfiguration):
     """
     Quickly sets up Digma with the required parametesr based on the OpenTelemetry resource and parameters
     This function is a quick setup for Digma and OTLP, if you already have OTLP set up you probably don't need it.

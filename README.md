@@ -25,10 +25,10 @@ python -m build
 To make it convenient to get started quickly with some default for both OpenTelemetry and Digma, a quick bootsrap function is provided. This is not intended for usage if you already have OpenTelmetry set up in your project, nor be used as a production configuration.
 
 ```python
-from opentelemetry.instrumentation.digma import digma_opentelmetry_boostrap
+from opentelemetry.instrumentation.digma import digma_opentelemetry_boostrap
 
-digma_opentelmetry_boostrap(service_name='server-name',     digma_backend="http://localhost:5050",
-                            configuration=DigmaConfiguration().trace_this_package())
+digma_opentelemetry_boostrap(service_name='server-name', digma_backend="http://localhost:5050",
+                             configuration=DigmaConfiguration().trace_this_package())
 ```
 
 #### If you are already using OpenTelemtry tracing in your project
