@@ -9,6 +9,7 @@ from opentelemetry.instrumentation.digma.instrumentation_extensions import exten
 
 extend_otel_exception_recording()
 
+
 def digma_opentelmetry_boostrap(service_name: str, digma_backend: str, configuration: DigmaConfiguration):
     """
     Quickly sets up Digma with the required parametesr based on the OpenTelemetry resource and parameters

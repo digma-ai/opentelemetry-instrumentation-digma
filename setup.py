@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, find_namespace_packages
 from pkg_resources import parse_requirements
 
 PACKAGE_INFO = {}
@@ -24,13 +24,12 @@ setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
     ],
-    package_dir={"": "src"},
-    packages=find_packages(),
+    package_dir={'': 'src'},
+    packages=find_namespace_packages('src'),
     include_package_data=True,
     python_requires='>=3.6',
     install_requires=requires,
     url="https://github.com/digma-ai/opentelemetry-instrumentation-digma",
-
     project_urls={
         'Bug Reports': 'https://github.com/digma-ai/opentelemetry-instrumentation-digma/issues',
         'Source': 'https://github.com/digma-ai/opentelemetry-instrumentation-digma/',
