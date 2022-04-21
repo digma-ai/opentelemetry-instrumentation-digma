@@ -7,3 +7,4 @@ venv/
 .git/
 digma_instrumentation/opentelemetry/exporter/digma/__pycache__/
 .pytest_cache/
+*.egg-info/
