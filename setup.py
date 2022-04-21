@@ -14,7 +14,7 @@ setup(
     version=PACKAGE_INFO['__version__'],
     author='Roni Dover',
     author_email='rdover@digma.ai',
-    description='First step package for digma',
+    description='Digma instrumentation for Python',
     long_description=Path("README.md").read_text(),
     long_description_content_type='text/markdown',
     classifiers=[
@@ -24,15 +24,15 @@ setup(
         'Natural Language :: English',
         'Operating System :: OS Independent',
     ],
+    package_dir={"": "src"},
     packages=find_packages(),
     include_package_data=True,
     python_requires='>=3.6',
     install_requires=requires,
+    url="https://github.com/digma-ai/opentelemetry-instrumentation-digma",
+
     project_urls={
-        'Bug Reports': 'https://github.com/digma-ai/opentelemetry-exporter-digma/issues',
-        'Source': 'https://github.com/digma-ai/opentelemetry-exporter-digma/',
-    },
+        'Bug Reports': 'https://github.com/digma-ai/opentelemetry-instrumentation-digma/issues',
+        'Source': 'https://github.com/digma-ai/opentelemetry-instrumentation-digma/',
+    }
 )
-
-
-
