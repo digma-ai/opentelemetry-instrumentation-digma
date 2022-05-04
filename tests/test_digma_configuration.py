@@ -5,8 +5,8 @@ import os
 
 # test
 from opentelemetry.sdk.resources import DEPLOYMENT_ENVIRONMENT
-from src.opentelemetry.instrumentation.digma import DigmaConfiguration
-from src.opentelemetry.instrumentation.digma.resource_attributes import *
+from opentelemetry.instrumentation.digma import DigmaConfiguration
+from opentelemetry.instrumentation.digma.resource_attributes import *
 
 class DigmaConfigurationTests(TestCase):
 
