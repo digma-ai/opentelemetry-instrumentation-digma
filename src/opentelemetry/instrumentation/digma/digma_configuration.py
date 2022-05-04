@@ -1,10 +1,10 @@
 import inspect
 import os
 from importlib import util
-from opentelemetry.sdk.resources import Resource, DEPLOYMENT_ENVIRONMENT
+from opentelemetry.sdk.resources import Resource, DEPLOYMENT_ENVIRONMENT, HOST_NAME
 
 from opentelemetry.instrumentation.digma.resource_attributes import *
-
+import socket
 
 class DigmaConfiguration:
 
@@ -37,7 +37,7 @@ class DigmaConfiguration:
         :param variable_name: the environment variable
         :return: The configuration object
         """
-        self,_deployment_environment_env_variable = variable_name
+        self._deployment_environment_env_variable = variable_name
         return self
 
     def set_commit_id(self, value: str) -> 'DigmaConfiguration':
@@ -93,13 +93,13 @@ class DigmaConfiguration:
     @property
     def resource(self):
 
-        commit_id = self._commit_id
+        commit_id = os.environ.get(self._commit_id_env_variable, '')
         if not commit_id:
-            commit_id= os.environ.get(self._commit_id_env_variable, '')
+            commit_id= self._commit_id
 
-        environment = self._environment
+        environment = os.environ.get(self._deployment_environment_env_variable, 'UNSET')
         if not environment:
-            environment = os.environ.get(self._deployment_environment_env_variable, 'UNSET')
+            environment = self._environment
 
         return Resource(attributes={
             DEPLOYMENT_ENVIRONMENT: environment,
@@ -107,7 +107,8 @@ class DigmaConfiguration:
             THIS_PACKAGE_ROOT: self._this_package_root,
             OTHER_PACKAGE_ROOTS: self._other_package_roots,
             VENV_ROOT: os.getenv('VIRTUAL_ENV', ''),
-            WORKING_DIRECTORY: os.getcwd().replace('\\', '/')
+            WORKING_DIRECTORY: os.getcwd().replace('\\', '/'),
+            HOST_NAME: socket.gethostname()
         })
 
 
