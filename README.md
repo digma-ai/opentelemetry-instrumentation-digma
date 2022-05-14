@@ -5,8 +5,6 @@ This package provides instrumentation helpers and tools to make it easy to set u
 
 In order to be able to effectively glean code-object based insights for continuous feedback and map them back in the IDE, Digma inserts additional attribute into the OTEL resource attributes. 
 
-To make it easy to use Digma, we've created this helper package.
-
 ### Installing the package
 ```bash
 pip install opentelemetry-instrumentation-digma
