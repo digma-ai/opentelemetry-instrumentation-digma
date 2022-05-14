@@ -97,9 +97,11 @@ class DigmaConfiguration:
         if not commit_id:
             commit_id= self._commit_id
 
-        environment = os.environ.get(self._deployment_environment_env_variable, 'UNSET')
+        environment = os.environ.get(self._deployment_environment_env_variable, '')
         if not environment:
             environment = self._environment
+        if not environment:
+            environment = 'UNSET'
 
         return Resource(attributes={
             DEPLOYMENT_ENVIRONMENT: environment,
