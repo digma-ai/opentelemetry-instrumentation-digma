@@ -5,20 +5,20 @@ This package provides instrumentation helpers and tools to make it easy to set u
 
 In order to be able to effectively glean code-object based insights for continuous feedback and map them back in the IDE, Digma inserts additional attribute into the OTEL resource attributes. 
 
-### Installing the package
+## Installing the package
 ```bash
 pip install opentelemetry-instrumentation-digma
 ```
 
-### Building the package from source
+## Building the package from source
 
 ```bash
 python -m build
 ```
 
-### Instrumenting an existing project
+## Instrumenting an existing project
 
-#### If you are introducing both OTEL and Digma
+### If you are introducing both OTEL and Digma
 
 To make it convenient to get started quickly with some default for both OpenTelemetry and Digma, a quick bootsrap function is provided. This is not intended for usage if you already have OpenTelmetry set up in your project, nor be used as a production configuration.
 
@@ -29,7 +29,7 @@ digma_opentelemetry_boostrap(service_name='server-name', digma_backend="http://l
                              configuration=DigmaConfiguration().trace_this_package())
 ```
 
-#### If you are already using OpenTelemtry tracing in your project
+### If you are already using OpenTelemtry tracing in your project
 
 If you have an existing OpenTelemtry instrumentaiton set up, simply use the DigmaConfiguration object to create a `Resource `object and merge it with your resource to import all of the needed attributes. 
 
