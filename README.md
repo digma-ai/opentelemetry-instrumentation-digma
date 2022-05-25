@@ -37,6 +37,27 @@ If you have an existing OpenTelemtry instrumentaiton set up, simply use the Digm
 resource = Resource.create(attributes={SERVICE_NAME: service_name})
 resource = resource.merge(DigmaConfiguration().trace_this_package())
 ```
+You can use a standard OTLP exporter to the Digma collector for local deployments:
+
+```python
+exporter = OTLPSpanExporter(endpoint="localhost:5050", insecure=True)
+provider.add_span_processor(BatchSpanProcessor(exporter))
+```
+
+Alternative, if you're already using a collector component you can simply modify its configuration file:
+```yaml
+exporters:
+...
+otlp/digma:
+    endpoint: "localhost:5050"
+    tls:
+      insecure: true
+service:
+  pipelines:
+    traces:
+      exporters: [otlp/digma, ...]
+```
+
 #### The Digma configuration options
 
 | Setting          | Description           | Default  |
