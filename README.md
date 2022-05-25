@@ -10,12 +10,6 @@ In order to be able to effectively glean code-object based insights for continuo
 pip install opentelemetry-instrumentation-digma
 ```
 
-## Building the package from source
-
-```bash
-python -m build
-```
-
 ## Instrumenting an existing project
 
 ### If you are introducing both OTEL and Digma
@@ -68,3 +62,10 @@ service:
 | `use_env_variable_for_deployment_environment` | Set a custom environment variable to read the deployment environment identifier from in runtime. | 'DEPLOYMENT_ENV' |
 | `trace_this_package` | Specify the current package root folder. Used to aligned tracing with code | None |
 | `trace_package` | Specify additional satellite or infra packages to track | None 
+
+
+## Building the package from source
+
+```bash
+python -m build
+```
