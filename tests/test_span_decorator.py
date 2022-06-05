@@ -4,7 +4,7 @@ from opentelemetry.sdk.trace import TracerProvider, SpanProcessor, ReadableSpan
 
 from opentelemetry import trace
 from opentelemetry.instrumentation.digma.trace_decorator import instrument, TracingDecoratorOptions
-from stubs.python_module import A, C
+from stubs.python_module import A, C, B
 
 
 class TestSpanDecorator:
@@ -37,7 +37,7 @@ class TestSpanDecorator:
         TracingDecoratorOptions.set_default_attributes({})
         TracingDecoratorOptions.set_naming_scheme(TracingDecoratorOptions.NamingSchemes.default_scheme)
 
-    @instrument()
+    @instrument
     def test_decorated_function_gets_instrumented_automatically_with_span(self):
         assert trace.get_current_span().is_recording() is True
 
@@ -49,7 +49,7 @@ class TestSpanDecorator:
         assert trace.get_current_span().is_recording() is True
         assert trace.get_current_span().name is 'blah'
 
-    @instrument()
+    @instrument
     def test_can_set_naming_scheme_for_spans(self, custom_naming_scheme):
         assert trace.get_current_span().name is custom_naming_scheme(self.test_can_set_naming_scheme_for_spans)
 
@@ -62,7 +62,7 @@ class TestSpanDecorator:
     def test_span_attributes_set_by_decorator(self, custom_naming_scheme):
         assert trace.get_current_span().attributes['test'] is 'blah'
 
-    @instrument()
+    @instrument
     def test_span_attributes_set_by_default_options(self, default_attributes_option):
         for att in default_attributes_option:
             assert trace.get_current_span().attributes[att] is default_attributes_option[att]
@@ -83,7 +83,7 @@ class TestSpanDecorator:
             span = TestSpanDecorator.span_processor.last_span
             assert not span.events
 
-    @instrument()
+    @instrument
     def execption_raising_span(self):
         raise Exception("blah")
 
@@ -110,6 +110,12 @@ class TestSpanDecorator:
         c.function_two()
         last_span = TestSpanDecorator.span_processor.last_span
         assert last_span.attributes.get('one') == 'two'
+
+    def test_existing_decorators_dont_affect_tracing_decorator(selfs):
+        b = B()
+        b.function_two()
+        last_span = TestSpanDecorator.span_processor.last_span
+        assert last_span.attributes.get('two') == 'three'
 
 
 @pytest.fixture

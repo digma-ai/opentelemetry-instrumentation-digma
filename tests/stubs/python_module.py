@@ -1,9 +1,11 @@
 from typing import Callable
 
-from opentelemetry.instrumentation.digma.trace_decorator import instrument_class, instrument
+from codetiming import Timer
+
+from opentelemetry.instrumentation.digma.trace_decorator import instrument
 
 
-@instrument_class()
+@instrument
 class A:
 
     def function_one(self):
@@ -16,12 +18,14 @@ class A:
         pass
 
 
-@instrument_class(attributes={"one": "two"})
+@instrument(attributes={"one": "two"})
 class B:
 
     def function_one(self):
         pass
 
+    @instrument(span_name="function_decorator", attributes={"two": "three"})
+    @Timer(name="decorator")
     def function_two(self):
         pass
 
@@ -29,7 +33,7 @@ class B:
         pass
 
 
-@instrument_class(attributes={"one": "two"})
+@instrument(attributes={"one": "two"})
 class C:
 
     @instrument(span_name="function_decorator", attributes={"two": "three"})
