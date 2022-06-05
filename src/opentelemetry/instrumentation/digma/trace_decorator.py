@@ -35,9 +35,11 @@ def instrument(_func_or_class=None, *, span_name: str = "", record_exception: bo
         for name, method in inspect.getmembers(cls, inspect.isfunction):
             if not name.startswith('_'):
                 setattr(cls, name, instrument(record_exception=record_exception,
-                                              attributes=attributes)(method))
+                                              attributes=attributes,
+                                              existing_tracer=existing_tracer)(method))
         return cls
 
+    # Check if this is a span or class decorator
     if inspect.isclass(_func_or_class):
         return decorate_class(_func_or_class)
 
