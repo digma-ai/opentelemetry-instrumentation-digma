@@ -1,14 +1,10 @@
-from typing import Callable, Optional
-
 import pytest
-from opentelemetry.context import Context
 from opentelemetry.sdk.resources import Resource, SERVICE_NAME
 from opentelemetry.sdk.trace import TracerProvider, SpanProcessor, ReadableSpan
 
 from opentelemetry import trace
-
 from opentelemetry.instrumentation.digma.trace_decorator import instrument, TracingDecoratorOptions
-from tests.stubs.python_module import A, B, C
+from stubs.python_module import A, C
 
 
 class TestSpanDecorator:
