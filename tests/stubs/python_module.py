@@ -46,6 +46,10 @@ class C:
     def _function_three(self):
         pass
 
+    @instrument(ignore=True)
+    def do_not_instrument(self):
+        pass
+
 
 class ModuleClass:
 

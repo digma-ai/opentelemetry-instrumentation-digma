@@ -117,6 +117,12 @@ class TestSpanDecorator:
         last_span = TestSpanDecorator.span_processor.last_span
         assert last_span.attributes.get('two') == 'three'
 
+    def test_ignored_functions_not_instrumented_by_class_decorator(selfs):
+        c = C()
+        c.do_not_instrument()
+        last_span = TestSpanDecorator.span_processor.last_span
+        assert len(TestSpanDecorator.span_processor.spans) == 0
+
 
 @pytest.fixture
 def custom_naming_scheme():

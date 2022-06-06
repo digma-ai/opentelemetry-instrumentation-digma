@@ -29,7 +29,20 @@ class TracingDecoratorOptions:
 
 
 def instrument(_func_or_class=None, *, span_name: str = "", record_exception: bool = True,
-               attributes: Dict[str, str] = None, existing_tracer: Tracer = None):
+               attributes: Dict[str, str] = None, existing_tracer: Tracer = None, ignore=False):
+    """
+    A decorator to instrument a class or function with an OTEL tracing span.
+    :param _func_or_class: The function or span to instrument, this is automatically assigned
+    :param span_name: Specify the span name explicitly, rather than use the naming convention.
+    This parameter has no effect for class decorators: str
+    :param record_exception: Sets whether any exceptions occurring in the span and the stacktrace are recorded
+    automatically: bool
+    :param attributes:A dictionary of span attributes. These will be automatically added to the span. If defined on a
+    class decorator, they will be added to every function span under the class.: dict
+    :param existing_tracer: Use a specific tracer instead of creating one :Tracer
+    :param ignore: Do not instrument this function, has no effect for class decorators:bool
+    :return:
+    """
 
     def decorate_class(cls):
         for name, method in inspect.getmembers(cls, inspect.isfunction):
@@ -72,6 +85,8 @@ def instrument(_func_or_class=None, *, span_name: str = "", record_exception: bo
                 _set_attributes(span, attributes)
                 return func(*args, **kwargs)
 
+        if ignore:
+            return func
         return wrap_with_span
 
     if _func_or_class is None:
