@@ -84,6 +84,7 @@ python -m build
 
 
 <a name="the-tracing-decorator"/>
+
 ## The tracing decorator
 
 The digma package include an optional tracing decorator intended to make span declarations easier 
