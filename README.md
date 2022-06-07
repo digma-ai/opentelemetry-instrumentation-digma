@@ -11,7 +11,7 @@ In order to be able to effectively glean code-object based insights for continuo
 
 [The Digma instrumentation helper configuration options](#the-digma-instrumentation-helper-configuration-options)
 
-[The tracing decorator](#the-tracing-decorator)
+[The Tracing decorator](#the-tracing-decorator)
 
 <a name="installing"/>
 
