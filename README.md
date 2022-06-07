@@ -95,6 +95,7 @@ Example usage:
 ```python 
 @instrument
 def standalone_function(self):
+    # Will create a span named 'standalone_function' (default naming)
     pass
     
 @instrument(attributes={"one": "two"})
@@ -102,16 +103,20 @@ class SomeClass:
 
     @instrument(span_name="function_decorator", attributes={"two": "three"})
     def function_one(self):
+        # Will create a span named 'function_decorator' with above attributes
         pass
 
     def function_two(self):
+        # Will create a span named 'function_two', since SomeClass has decorator
         pass
    
     def _function_three(self):
+        # Will not create a span for this function as it is private
         pass
 
     @instrument(ignore=True)
     def do_not_instrument(self):
+        # Will not create a span for this function as it is set to ignore
         pass
 ```
 
