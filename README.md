@@ -5,11 +5,22 @@ This package provides instrumentation helpers and tools to make it easy to set u
 
 In order to be able to effectively glean code-object based insights for continuous feedback and map them back in the IDE, Digma inserts additional attribute into the OTEL resource attributes. 
 
+[Installing the package](#installing) 
+
+[Instrumenting existing projects](#instrumenting_existing) 
+
+[The Digma instrumentation helper configuration options](#the-digma-instrumentation-helper-configuration-options)
+
+[The tracing decorator](#the-tracing-decorator)
+
+<a name="installing"/>
+
 ## Installing the package
 ```bash
 pip install opentelemetry-instrumentation-digma
 ```
 
+<a name="instrumenting_existing"/>
 ## Instrumenting an existing project
 
 ### If you are introducing both OTEL and Digma
@@ -52,7 +63,15 @@ service:
       exporters: [otlp/digma, ...]
 ```
 
-#### The Digma configuration options
+## Building the package from source
+
+```bash
+python -m build
+```
+
+<a name="the-digma-instrumentation-helper-configuration-options"/>
+
+## The Digma instrumentation helper configuration options
 
 | Setting          | Description           | Default  |
 | ---------------- |-------------  | -----|
@@ -64,8 +83,34 @@ service:
 | `trace_package` | Specify additional satellite or infra packages to track | None 
 
 
-## Building the package from source
+<a name="the-tracing-decorator"/>
+## The tracing decorator
 
-```bash
-python -m build
+The digma package include an optional tracing decorator intended to make span declarations easier 
+and less repetitive. You can use the decorator at the function or class level to specify 
+a span should be automatically created.
+
+Example usage:
+```python 
+@instrument
+def standalone_function(self):
+    pass
+    
+@instrument(attributes={"one": "two"})
+class SomeClass:
+
+    @instrument(span_name="function_decorator", attributes={"two": "three"})
+    def function_one(self):
+        pass
+
+    def function_two(self):
+        pass
+   
+    def _function_three(self):
+        pass
+
+    @instrument(ignore=True)
+    def do_not_instrument(self):
+        pass
 ```
+
