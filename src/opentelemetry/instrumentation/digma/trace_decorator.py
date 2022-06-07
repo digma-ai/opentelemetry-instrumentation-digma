@@ -41,11 +41,12 @@ def instrument(_func_or_class=None, *, span_name: str = "", record_exception: bo
     class decorator, they will be added to every function span under the class.: dict
     :param existing_tracer: Use a specific tracer instead of creating one :Tracer
     :param ignore: Do not instrument this function, has no effect for class decorators:bool
-    :return:
+    :return:The decorator function
     """
 
     def decorate_class(cls):
         for name, method in inspect.getmembers(cls, inspect.isfunction):
+            # Ignore private functions, TODO: maybe make this a setting?
             if not name.startswith('_'):
                 setattr(cls, name, instrument(record_exception=record_exception,
                                               attributes=attributes,
@@ -56,37 +57,38 @@ def instrument(_func_or_class=None, *, span_name: str = "", record_exception: bo
     if inspect.isclass(_func_or_class):
         return decorate_class(_func_or_class)
 
-    def span_decorator(func):
+    def span_decorator(func_or_class):
 
-        if inspect.isclass(func):
-            return decorate_class(func)
+        if inspect.isclass(func_or_class):
+            return decorate_class(func_or_class)
 
         # Check if already decorated (happens if both class and function
         # decorated). If so, we keep the function decorator settings only
-        undecorated_func = getattr(func, '__tracing_unwrapped__', None)
+        undecorated_func = getattr(func_or_class, '__tracing_unwrapped__', None)
         if undecorated_func:
             # We have already decorated this function, override
-            return func
+            return func_or_class
 
-        setattr(func, '__tracing_unwrapped__', func)
+        setattr(func_or_class, '__tracing_unwrapped__', func_or_class)
 
-        tracer = existing_tracer or trace.get_tracer(func.__module__)
+        tracer = existing_tracer or trace.get_tracer(func_or_class.__module__)
 
         def _set_attributes(span, attributes_dict):
             if attributes_dict:
                 for att in attributes_dict:
                     span.set_attribute(att, attributes_dict[att])
 
-        @wraps(func)
+        @wraps(func_or_class)
         def wrap_with_span(*args, **kwargs):
-            name = span_name or TracingDecoratorOptions.naming_scheme(func)
+            name = span_name or TracingDecoratorOptions.naming_scheme(func_or_class)
             with tracer.start_as_current_span(name, record_exception=record_exception) as span:
                 _set_attributes(span, TracingDecoratorOptions.default_attributes)
                 _set_attributes(span, attributes)
-                return func(*args, **kwargs)
+                return func_or_class(*args, **kwargs)
 
         if ignore:
-            return func
+            return func_or_class
+
         return wrap_with_span
 
     if _func_or_class is None:
