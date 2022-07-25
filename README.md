@@ -20,7 +20,6 @@ In order to be able to effectively glean code-object based insights for continuo
 pip install opentelemetry-instrumentation-digma
 ```
 
-<a name="instrumenting_existing"/>
 ## Instrumenting an existing project
 
 ### If you are introducing both OTEL and Digma
