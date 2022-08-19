@@ -48,7 +48,7 @@ exporter = OTLPSpanExporter(endpoint="localhost:5050", insecure=True)
 provider.add_span_processor(BatchSpanProcessor(exporter))
 ```
 
-Alternative, if you're already using a collector component you can simply modify its configuration file:
+Alternatively, if you're already using a collector component you can simply modify its configuration file:
 ```yaml
 exporters:
 ...
