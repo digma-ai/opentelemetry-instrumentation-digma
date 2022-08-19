@@ -101,7 +101,7 @@ class DigmaConfiguration:
         if not environment:
             environment = self._environment
         if not environment:
-            environment = 'UNSET'
+            environment = socket.gethostname() + "[local]"
 
         return Resource(attributes={
             DEPLOYMENT_ENVIRONMENT: environment,

@@ -51,6 +51,20 @@ class C:
         pass
 
 
+@instrument(attributes={"one": "two"})
+class ClassWithStaticMethods:
+    
+    @staticmethod
+    def function_one():
+        pass
+
+    def function_two(self):
+        pass
+
+    def _function_three(self):
+        pass
+
+
 class ModuleClass:
 
     def function_one(self):
