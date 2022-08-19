@@ -5,6 +5,7 @@ from opentelemetry.sdk.trace import TracerProvider, SpanProcessor, ReadableSpan
 from opentelemetry import trace
 from opentelemetry.instrumentation.digma.trace_decorator import instrument, TracingDecoratorOptions
 from stubs.python_module import A, C, B
+from stubs.python_module import ClassWithStaticMethods
 
 
 class TestSpanDecorator:
@@ -123,6 +124,20 @@ class TestSpanDecorator:
         last_span = TestSpanDecorator.span_processor.last_span
         assert len(TestSpanDecorator.span_processor.spans) == 0
 
+    def test_can_decorate_class_with_static_function(self):
+        ClassWithStaticMethods.function_one()
+        assert len(TestSpanDecorator.span_processor.spans) == 1
+        last_span = TestSpanDecorator.span_processor.last_span
+        assert last_span.attributes.get('one') == 'two'
+        assert last_span.name == 'ClassWithStaticMethods.function_one'
+
+    def test_can_decorate_class_with_static_function_calling_method_on_instance(self):
+        c = ClassWithStaticMethods()
+        c.function_one()
+        assert len(TestSpanDecorator.span_processor.spans) == 1
+        last_span = TestSpanDecorator.span_processor.last_span
+        assert last_span.attributes.get('one') == 'two'
+        assert last_span.name == 'ClassWithStaticMethods.function_one'
 
 @pytest.fixture
 def custom_naming_scheme():

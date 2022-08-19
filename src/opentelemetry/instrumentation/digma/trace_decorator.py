@@ -1,4 +1,5 @@
 import inspect
+import types
 from functools import wraps
 from typing import Callable, Dict
 
@@ -32,6 +33,7 @@ def instrument(_func_or_class=None, *, span_name: str = "", record_exception: bo
                attributes: Dict[str, str] = None, existing_tracer: Tracer = None, ignore=False):
     """
     A decorator to instrument a class or function with an OTEL tracing span.
+    :param cls: internal, used to specify scope of instrumentation
     :param _func_or_class: The function or span to instrument, this is automatically assigned
     :param span_name: Specify the span name explicitly, rather than use the naming convention.
     This parameter has no effect for class decorators: str
@@ -51,6 +53,7 @@ def instrument(_func_or_class=None, *, span_name: str = "", record_exception: bo
                 setattr(cls, name, instrument(record_exception=record_exception,
                                               attributes=attributes,
                                               existing_tracer=existing_tracer)(method))
+
         return cls
 
     # Check if this is a span or class decorator
@@ -71,6 +74,9 @@ def instrument(_func_or_class=None, *, span_name: str = "", record_exception: bo
 
         setattr(func_or_class, '__tracing_unwrapped__', func_or_class)
 
+        #todo find more elegant way
+        static_method = 'self' not in inspect.signature(func_or_class).parameters
+
         tracer = existing_tracer or trace.get_tracer(func_or_class.__module__)
 
         def _set_attributes(span, attributes_dict):
@@ -84,6 +90,8 @@ def instrument(_func_or_class=None, *, span_name: str = "", record_exception: bo
             with tracer.start_as_current_span(name, record_exception=record_exception) as span:
                 _set_attributes(span, TracingDecoratorOptions.default_attributes)
                 _set_attributes(span, attributes)
+                if static_method:
+                    return func_or_class(*args[slice(1,len(args))], **kwargs)
                 return func_or_class(*args, **kwargs)
 
         if ignore:
