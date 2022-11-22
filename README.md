@@ -90,6 +90,8 @@ The digma package include an optional tracing decorator intended to make span de
 and less repetitive. You can use the decorator at the function or class level to specify 
 a span should be automatically created.
 
+The decorator will automatically add additional context for each span based on the wrapped method.
+
 Example usage:
 ```python 
 @instrument
