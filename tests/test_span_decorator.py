@@ -6,6 +6,7 @@ from opentelemetry import trace
 from opentelemetry.instrumentation.digma.trace_decorator import instrument, TracingDecoratorOptions
 from stubs.python_module import A, C, B
 from stubs.python_module import ClassWithStaticMethods
+from opentelemetry.semconv.trace import SpanAttributes
 
 
 class TestSpanDecorator:
@@ -59,9 +60,21 @@ class TestSpanDecorator:
         assert trace.get_current_span().name is not custom_naming_scheme(self.test_can_set_naming_scheme_for_spans)
         assert trace.get_current_span().name is 'some_name'
 
+    @instrument(span_name="async span")
+    @pytest.mark.asyncio
+    async def test_explicit_async_span_name_overrides_policy(self, custom_naming_scheme):
+        assert trace.get_current_span().name is not custom_naming_scheme(self.test_can_set_naming_scheme_for_spans)
+        assert trace.get_current_span().name is 'async span'
+
     @instrument(attributes={'test': 'blah'})
     def test_span_attributes_set_by_decorator(self, custom_naming_scheme):
         assert trace.get_current_span().attributes['test'] is 'blah'
+
+
+    @instrument()
+    def test_span_semantic_attributes_set_by_decorator(self, custom_naming_scheme):
+        assert trace.get_current_span().attributes[SpanAttributes.CODE_FUNCTION] is 'TestSpanDecorator.test_span_semantic_attributes_set_by_decorator'
+        assert trace.get_current_span().attributes[SpanAttributes.CODE_FILEPATH].endswith( 'opentelemetry-instrumentation-digma/tests/test_span_decorator.py')
 
     @instrument
     def test_span_attributes_set_by_default_options(self, default_attributes_option):
