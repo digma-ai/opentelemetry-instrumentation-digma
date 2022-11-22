@@ -3,6 +3,7 @@ import inspect
 import types
 from functools import wraps
 from typing import Callable, Dict, Tuple
+from opentelemetry.semconv.trace import SpanAttributes
 
 from opentelemetry.trace import Tracer
 
@@ -86,10 +87,14 @@ def instrument(_func_or_class=None, *, span_name: str = "", record_exception: bo
 
         setattr(func_or_class, '__tracing_unwrapped__', func_or_class)
 
-        #todo find more elegant way
-        static_method = 'self' not in inspect.signature(func_or_class).parameters
-
         tracer = existing_tracer or trace.get_tracer(func_or_class.__module__)
+
+        def _set_semantic_attributes(span, func: Callable):
+            span.set_attribute(SpanAttributes.CODE_NAMESPACE, func.__module__)
+            span.set_attribute(SpanAttributes.CODE_FUNCTION, func.__qualname__)
+            span.set_attribute(SpanAttributes.CODE_FILEPATH, func.__code__.co_filename)
+            span.set_attribute(SpanAttributes.CODE_LINENO, func.__code__.co_firstlineno)
+
 
         def _set_attributes(span, attributes_dict):
             if attributes_dict:
@@ -100,6 +105,7 @@ def instrument(_func_or_class=None, *, span_name: str = "", record_exception: bo
         def wrap_with_span_sync(*args, **kwargs):
             name = span_name or TracingDecoratorOptions.naming_scheme(func_or_class)
             with tracer.start_as_current_span(name, record_exception=record_exception) as span:
+                _set_semantic_attributes(span,func_or_class)
                 _set_attributes(span, TracingDecoratorOptions.default_attributes)
                 _set_attributes(span, attributes)
                 return func_or_class(*args, **kwargs)
@@ -108,6 +114,7 @@ def instrument(_func_or_class=None, *, span_name: str = "", record_exception: bo
         async def wrap_with_span_async(*args, **kwargs):
             name = span_name or TracingDecoratorOptions.naming_scheme(func_or_class)
             with tracer.start_as_current_span(name, record_exception=record_exception) as span:
+                _set_semantic_attributes(span,func_or_class)
                 _set_attributes(span, TracingDecoratorOptions.default_attributes)
                 _set_attributes(span, attributes)
                 return await func_or_class(*args, **kwargs)
