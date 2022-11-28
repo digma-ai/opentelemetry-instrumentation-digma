@@ -105,8 +105,8 @@ class DigmaConfiguration:
     @property
     def resource(self):
 
-        commit_id = os.environ.get(self._commit_id_env_variable, '') or \
-                    self._commit_id
+        commit_id = self._commit_id or \
+                    os.environ.get(self._commit_id_env_variable, '')
 
         environment = self._environment or \
                       os.environ.get(self._digma_environment_env_variable, '') or \

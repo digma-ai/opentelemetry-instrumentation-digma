@@ -24,23 +24,23 @@ class TestDigmaConfiguration:
         resource_commit_id = self.digma_configuration.resource.attributes[COMMIT_ID]
         assert resource_commit_id == commit_id
 
-    def test_commit_id_is_provided_env_variable_still_used(self):
+    def test_explicit_commit_id_preferred_over_env_variable(self):
         env_commit_id = TestDigmaConfiguration._get_random_string(10)
         os.environ[DigmaConfiguration.DEFAULT_ENV_VARIABLE_COMMIT_ID] = env_commit_id
 
         explicit_commit_id = TestDigmaConfiguration._get_random_string(10)
-
         self.digma_configuration.set_commit_id(explicit_commit_id)
+
         commit_id_actual = self.digma_configuration.resource.attributes[COMMIT_ID]
-        assert commit_id_actual == env_commit_id
-        assert commit_id_actual != explicit_commit_id
+        assert commit_id_actual == explicit_commit_id
+        assert commit_id_actual != env_commit_id
 
     def test_uses_explicitly_provided_environment_variable_for_commit_id(self):
         env_commit_id = TestDigmaConfiguration._get_random_string(10)
         custom_env_variable = 'CUSTOM_ENV_COMMIT_ID'
         os.environ[custom_env_variable] = env_commit_id
 
-        self.digma_configuration.use_env_variable_for_commit_id(custom_env_variable);
+        self.digma_configuration.use_env_variable_for_commit_id(custom_env_variable)
 
         resource_commit_id = self.digma_configuration.resource.attributes[COMMIT_ID]
         assert resource_commit_id == env_commit_id
@@ -51,16 +51,19 @@ class TestDigmaConfiguration:
         resource_commit_id = self.digma_configuration.resource.attributes[DIGMA_ENV]
         assert resource_commit_id == environment_id
 
-    def test_explicit_deploymet_env_provided_env_variable_still_used(self):
+    def test_explicit_commit_id_preferred_over_env_variable(self):
         env_deployment_env = TestDigmaConfiguration._get_random_string(10)
+        env_digma_env = TestDigmaConfiguration._get_random_string(10)
         os.environ[DigmaConfiguration.DEFAULT_ENV_VARIABLE_DEPLOYMENT_ENV] = env_deployment_env
+        os.environ[DigmaConfiguration.DEFAULT_ENV_VARIABLE_DIGMA_ENV] = env_digma_env
 
         explicit_deployment_env = TestDigmaConfiguration._get_random_string(10)
+        self.digma_configuration.set_environment(explicit_deployment_env)
 
-        resource_deployment_env = self.digma_configuration.set_environment(explicit_deployment_env).resource.attributes[
-            DIGMA_ENV]
-        assert resource_deployment_env == env_deployment_env
-        assert resource_deployment_env != explicit_deployment_env
+        env_actual = self.digma_configuration.resource.attributes[DIGMA_ENV]
+        assert env_actual != env_deployment_env
+        assert env_actual != env_digma_env
+        assert env_actual == explicit_deployment_env
 
     def test_will_use_alternative_commmit_env_variable(self):
         environment_id = TestDigmaConfiguration._get_random_string(10)
