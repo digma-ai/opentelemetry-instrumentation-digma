@@ -1,7 +1,7 @@
 import inspect
 import os
 from importlib import util
-from opentelemetry.sdk.resources import Resource, DEPLOYMENT_ENVIRONMENT, HOST_NAME
+from opentelemetry.sdk.resources import Resource, HOST_NAME
 
 from opentelemetry.instrumentation.digma.resource_attributes import *
 import socket

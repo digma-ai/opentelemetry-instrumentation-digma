@@ -3,7 +3,6 @@ import random
 import string
 
 # test
-from opentelemetry.sdk.resources import DEPLOYMENT_ENVIRONMENT
 
 from opentelemetry.instrumentation.digma import DigmaConfiguration
 from opentelemetry.instrumentation.digma.resource_attributes import *
@@ -49,7 +48,7 @@ class TestDigmaConfiguration:
     def test_if_no_explicit_deploymet_env_provided_defaults_to_default_env_variable(self):
         environment_id = TestDigmaConfiguration._get_random_string(10)
         os.environ[DigmaConfiguration.DEFAULT_ENV_VARIABLE_DEPLOYMENT_ENV] = environment_id
-        resource_commit_id = self.digma_configuration.resource.attributes[DEPLOYMENT_ENVIRONMENT]
+        resource_commit_id = self.digma_configuration.resource.attributes[DIGMA_ENV]
         assert resource_commit_id == environment_id
 
     def test_explicit_deploymet_env_provided_env_variable_still_used(self):
@@ -59,7 +58,7 @@ class TestDigmaConfiguration:
         explicit_deployment_env = TestDigmaConfiguration._get_random_string(10)
 
         resource_deployment_env = self.digma_configuration.set_environment(explicit_deployment_env).resource.attributes[
-            DEPLOYMENT_ENVIRONMENT]
+            DIGMA_ENV]
         assert resource_deployment_env == env_deployment_env
         assert resource_deployment_env != explicit_deployment_env
 
@@ -78,5 +77,5 @@ class TestDigmaConfiguration:
 
         os.environ[environment_key] = environment_id
         self.digma_configuration.use_env_variable_for_deployment_environment(environment_key)
-        deployment_env = self.digma_configuration.resource.attributes[DEPLOYMENT_ENVIRONMENT]
+        deployment_env = self.digma_configuration.resource.attributes[DIGMA_ENV]
         assert deployment_env == environment_id
