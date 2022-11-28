@@ -6,15 +6,17 @@ from opentelemetry.sdk.resources import Resource, DEPLOYMENT_ENVIRONMENT, HOST_N
 from opentelemetry.instrumentation.digma.resource_attributes import *
 import socket
 
-class DigmaConfiguration:
 
+class DigmaConfiguration:
     DEFAULT_ENV_VARIABLE_COMMIT_ID = 'GIT_COMMIT_ID'
     DEFAULT_ENV_VARIABLE_DEPLOYMENT_ENV = 'DEPLOYMENT_ENV'
+    DEFAULT_ENV_VARIABLE_DIGMA_ENV = 'DIGMA_ENV'
 
     def __init__(self):
         self._environment = ''
         self._commit_id_env_variable = DigmaConfiguration.DEFAULT_ENV_VARIABLE_COMMIT_ID
         self._deployment_environment_env_variable = DigmaConfiguration.DEFAULT_ENV_VARIABLE_DEPLOYMENT_ENV
+        self._digma_environment_env_variable = DigmaConfiguration.DEFAULT_ENV_VARIABLE_DIGMA_ENV
         self._commit_id = ''
         self._this_package_root = ''
         self._other_package_roots = []
@@ -33,11 +35,21 @@ class DigmaConfiguration:
     def use_env_variable_for_deployment_environment(self, variable_name: str) -> 'DigmaConfiguration':
         """
         Set the env variable used to retrieve the deployment environment. The default is 'DEPLOYMENT_ENV'.
-        This value will be ignored if the deployment environment is provided explicitly via 'set_environment'
+        This value will be ignored if the digma environment is provided explicitly via 'set_environment'
         :param variable_name: the environment variable
         :return: The configuration object
         """
         self._deployment_environment_env_variable = variable_name
+        return self
+
+    def use_env_variable_for_digma_environment(self, variable_name: str) -> 'DigmaConfiguration':
+        """
+        Set the env variable used to retrieve the digma environment. The default is 'DIGMA_ENV'.
+        This value will be ignored if the digma environment is provided explicitly via 'set_environment'
+        :param variable_name: the environment variable
+        :return: The configuration object
+        """
+        self._digma_environment_env_variable = variable_name
         return self
 
     def set_commit_id(self, value: str) -> 'DigmaConfiguration':
@@ -93,18 +105,16 @@ class DigmaConfiguration:
     @property
     def resource(self):
 
-        commit_id = os.environ.get(self._commit_id_env_variable, '')
-        if not commit_id:
-            commit_id= self._commit_id
+        commit_id = os.environ.get(self._commit_id_env_variable, '') or \
+                    self._commit_id
 
-        environment = os.environ.get(self._deployment_environment_env_variable, '')
-        if not environment:
-            environment = self._environment
-        if not environment:
-            environment = socket.gethostname() + "[local]"
+        environment = self._environment or \
+                      os.environ.get(self._digma_environment_env_variable, '') or \
+                      os.environ.get(self._deployment_environment_env_variable, '') or \
+                      socket.gethostname() + "[local]"
 
         return Resource(attributes={
-            DEPLOYMENT_ENVIRONMENT: environment,
+            DIGMA_ENV: environment,
             COMMIT_ID: commit_id,
             THIS_PACKAGE_ROOT: self._this_package_root,
             OTHER_PACKAGE_ROOTS: self._other_package_roots,
@@ -112,5 +122,3 @@ class DigmaConfiguration:
             WORKING_DIRECTORY: os.getcwd().replace('\\', '/'),
             HOST_NAME: socket.gethostname()
         })
-
-
