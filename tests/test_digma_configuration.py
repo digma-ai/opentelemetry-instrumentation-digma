@@ -10,8 +10,11 @@ from opentelemetry.instrumentation.digma.resource_attributes import *
 
 class TestDigmaConfiguration:
 
+    DEFAULT_ENV_VARS = os.environ
+
     def setup_method(self, method):
         self.digma_configuration = DigmaConfiguration()
+        os.environ = TestDigmaConfiguration.DEFAULT_ENV_VARS.copy()
 
     @staticmethod
     def _get_random_string(characters: int):
@@ -51,7 +54,7 @@ class TestDigmaConfiguration:
         resource_commit_id = self.digma_configuration.resource.attributes[DIGMA_ENV]
         assert resource_commit_id == environment_id
 
-    def test_explicit_commit_id_preferred_over_env_variable(self):
+    def test_explicit_environment_preferred_over_env_variable(self):
         env_deployment_env = TestDigmaConfiguration._get_random_string(10)
         env_digma_env = TestDigmaConfiguration._get_random_string(10)
         os.environ[DigmaConfiguration.DEFAULT_ENV_VARIABLE_DEPLOYMENT_ENV] = env_deployment_env
