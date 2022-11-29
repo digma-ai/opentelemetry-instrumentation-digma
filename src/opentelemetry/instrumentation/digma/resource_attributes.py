@@ -1,3 +1,4 @@
+DIGMA_ENV = 'digma.environment'
 COMMIT_ID = 'scm.commit.id'
 WORKING_DIRECTORY = 'paths.working_directory'
 THIS_PACKAGE_ROOT = 'paths.python.packages.main.root'
